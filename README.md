@@ -30,3 +30,8 @@ npm run dev
 ```
 
 The Vite dev server proxies `/api` and `/media` to `http://127.0.0.1:8000`.
+
+## Production deployment
+
+See [DEPLOY.md](./DEPLOY.md) for step-by-step deployment to Vercel, Render, PostgreSQL, and Cloudinary.
+

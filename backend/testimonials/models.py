@@ -74,7 +74,9 @@ class Scholar(models.Model):
             self._generate_thumbnail()
 
     def _generate_thumbnail(self):
-        img = Image.open(self.image.path)
+        with self.image.open("rb") as image_file:
+            img = Image.open(image_file)
+            img.load()
         img.thumbnail((100, 120))
         buffer = BytesIO()
         img_format = img.format if img.format in ("JPEG", "PNG", "WEBP") else "JPEG"

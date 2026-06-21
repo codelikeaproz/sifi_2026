@@ -1,3 +1,10 @@
+const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+
+function apiUrl(path: string): string {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return `${API_BASE}${normalized}`;
+}
+
 export type LatinHonor =
   | ""
   | "cum_laude"
@@ -126,7 +133,7 @@ async function refreshAccessToken(): Promise<string | null> {
   const refresh = getRefreshToken();
   if (!refresh) return null;
 
-  const res = await fetch("/api/auth/token/refresh/", {
+  const res = await fetch(apiUrl("/api/auth/token/refresh/"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh }),
@@ -170,7 +177,7 @@ export async function login(
   username: string,
   password: string
 ): Promise<void> {
-  const res = await fetch("/api/auth/token/", {
+  const res = await fetch(apiUrl("/api/auth/token/"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
@@ -192,7 +199,7 @@ export async function login(
 }
 
 export async function getMe(): Promise<AuthUser> {
-  const res = await authFetch("/api/auth/me/");
+  const res = await authFetch(apiUrl("/api/auth/me/"));
   if (!res.ok) throw new Error("Failed to load profile");
   return res.json() as Promise<AuthUser>;
 }
@@ -209,7 +216,7 @@ export async function getScholars(params?: {
     query.set("search", params.search.trim());
   }
   const qs = query.toString();
-  const res = await fetch(`/api/scholars/${qs ? `?${qs}` : ""}`);
+  const res = await fetch(apiUrl(`/api/scholars/${qs ? `?${qs}` : ""}`));
   if (!res.ok) throw new Error("Failed to load scholars");
   return res.json() as Promise<Scholar[]>;
 }
@@ -242,19 +249,19 @@ export async function getScholarsPaginated(params: {
     query.set("region", params.region);
   }
 
-  const res = await authFetch(`/api/scholars/?${query.toString()}`);
+  const res = await authFetch(apiUrl(`/api/scholars/?${query.toString()}`));
   if (!res.ok) throw new Error("Failed to load scholars");
   return res.json() as Promise<PaginatedScholars>;
 }
 
 export async function getScholar(id: number): Promise<Scholar> {
-  const res = await fetch(`/api/scholars/${id}/`);
+  const res = await fetch(apiUrl(`/api/scholars/${id}/`));
   if (!res.ok) throw new Error("Failed to load scholar");
   return res.json() as Promise<Scholar>;
 }
 
 export async function createScholar(formData: FormData): Promise<Scholar> {
-  const res = await authFetch("/api/scholars/", {
+  const res = await authFetch(apiUrl("/api/scholars/"), {
     method: "POST",
     body: formData,
   });
@@ -269,7 +276,7 @@ export async function updateScholar(
   id: number,
   formData: FormData
 ): Promise<Scholar> {
-  const res = await authFetch(`/api/scholars/${id}/`, {
+  const res = await authFetch(apiUrl(`/api/scholars/${id}/`), {
     method: "PATCH",
     body: formData,
   });
@@ -281,7 +288,7 @@ export async function updateScholar(
 }
 
 export async function deleteScholar(id: number): Promise<void> {
-  const res = await authFetch(`/api/scholars/${id}/`, {
+  const res = await authFetch(apiUrl(`/api/scholars/${id}/`), {
     method: "DELETE",
   });
   if (!res.ok) {
@@ -317,13 +324,13 @@ export const USER_ROLE_OPTIONS: { value: UserRole; label: string }[] = [
 ];
 
 export async function getUsers(): Promise<ManagedUser[]> {
-  const res = await authFetch("/api/users/");
+  const res = await authFetch(apiUrl("/api/users/"));
   if (!res.ok) throw new Error("Failed to load users");
   return res.json() as Promise<ManagedUser[]>;
 }
 
 export async function getUser(id: number): Promise<ManagedUser> {
-  const res = await authFetch(`/api/users/${id}/`);
+  const res = await authFetch(apiUrl(`/api/users/${id}/`));
   if (!res.ok) throw new Error("Failed to load user");
   return res.json() as Promise<ManagedUser>;
 }
@@ -334,7 +341,7 @@ export async function createUser(data: {
   role: UserRole;
   region?: Region | "";
 }): Promise<ManagedUser> {
-  const res = await authFetch("/api/users/", {
+  const res = await authFetch(apiUrl("/api/users/"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -355,7 +362,7 @@ export async function updateUser(
     region?: Region | "";
   }
 ): Promise<ManagedUser> {
-  const res = await authFetch(`/api/users/${id}/`, {
+  const res = await authFetch(apiUrl(`/api/users/${id}/`), {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -368,7 +375,7 @@ export async function updateUser(
 }
 
 export async function deleteUser(id: number): Promise<void> {
-  const res = await authFetch(`/api/users/${id}/`, {
+  const res = await authFetch(apiUrl(`/api/users/${id}/`), {
     method: "DELETE",
   });
   if (!res.ok) {
