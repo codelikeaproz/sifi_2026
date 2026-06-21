@@ -116,6 +116,7 @@ if USE_CLOUDINARY:
         "API_KEY": os.environ.get("CLOUDINARY_API_KEY", ""),
         "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", ""),
     }
+
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -124,6 +125,10 @@ if USE_CLOUDINARY:
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
+
+    STATICFILES_STORAGE = (
+        "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    )
 else:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
