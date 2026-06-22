@@ -1,3 +1,4 @@
+import logging
 from io import BytesIO
 
 from django.contrib.auth.models import User
@@ -5,6 +6,8 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models import Max
 from PIL import Image
+
+logger = logging.getLogger(__name__)
 
 
 class LatinHonor(models.TextChoices):
@@ -71,7 +74,10 @@ class Scholar(models.Model):
             self.order = (max_order or 0) + 1
         super().save(*args, **kwargs)
         if self.image:
-            self._generate_thumbnail()
+            try:
+                self._generate_thumbnail()
+            except Exception:
+                logger.exception("Failed to generate scholar thumbnail.")
 
     def _generate_thumbnail(self):
         with self.image.open("rb") as image_file:
