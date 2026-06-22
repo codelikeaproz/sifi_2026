@@ -32,12 +32,14 @@ import {
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteLogo } from "@/components/SiteHeader";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ScholarFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { assignedRegion } = useAuth();
+  const { success, error: showError } = useToast();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -54,11 +56,7 @@ export default function ScholarFormPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (assignedRegion) {
-      setRegion(assignedRegion);
-    }
-  }, [assignedRegion]);
+  const regionValue = assignedRegion ?? region;
 
   useEffect(() => {
     if (!id) return;
@@ -95,7 +93,7 @@ export default function ScholarFormPage() {
     formData.append("suffix", suffix);
     formData.append("school", school);
     formData.append("degree_name", degreeName);
-    formData.append("region", region);
+    formData.append("region", regionValue);
     formData.append("latin_honor", toLatinHonorValue(latinHonor));
     formData.append("message", message);
     if (image) formData.append("image", image);
@@ -107,9 +105,19 @@ export default function ScholarFormPage() {
       } else {
         await createScholar(formData);
       }
+      const displayName = [firstName, middleInitial, lastName, suffix]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+      success(
+        isEdit ? "Scholar updated" : "Scholar created",
+        `${displayName} was saved successfully.`
+      );
       navigate("/admin/scholars");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      const message = err instanceof Error ? err.message : "Save failed";
+      setError(message);
+      showError("Save failed", message);
     } finally {
       setSubmitting(false);
     }
@@ -206,7 +214,7 @@ export default function ScholarFormPage() {
             <div className="space-y-2">
               <Label htmlFor="region">Region</Label>
               <Select
-                value={region}
+                value={regionValue}
                 onValueChange={(v) => setRegion(v as Region)}
                 disabled={Boolean(assignedRegion)}
               >
