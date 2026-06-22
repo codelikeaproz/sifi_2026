@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
@@ -8,6 +10,32 @@ class Command(BaseCommand):
     help = "Ensure superusers and staff have Admin UserProfile records"
 
     def handle(self, *args, **options):
+        username = os.environ.get("DJANGO_SUPERUSER_USERNAME", "").strip()
+        password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "")
+        email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "").strip()
+
+        if username and password:
+            user, created = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    "email": email,
+                    "is_staff": True,
+                    "is_superuser": True,
+                },
+            )
+            user.email = email
+            user.is_staff = True
+            user.is_superuser = True
+            user.set_password(password)
+            user.save()
+            action = "Created" if created else "Updated"
+            self.stdout.write(f"{action} env superuser: {user.username}")
+        elif username or password:
+            self.stdout.write(
+                "Skipping env superuser: set both DJANGO_SUPERUSER_USERNAME and "
+                "DJANGO_SUPERUSER_PASSWORD."
+            )
+
         count = 0
         for user in User.objects.filter(is_superuser=True):
             profile, created = UserProfile.objects.get_or_create(
