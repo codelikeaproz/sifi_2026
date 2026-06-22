@@ -43,7 +43,6 @@ USE_CLOUDINARY = bool(CLOUDINARY_CLOUD_NAME)
 
 if USE_CLOUDINARY:
     INSTALLED_APPS = [
-        "cloudinary_storage",
         "cloudinary",
         *INSTALLED_APPS,
     ]
@@ -109,6 +108,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 if USE_CLOUDINARY:
     CLOUDINARY_STORAGE = {
@@ -122,9 +122,10 @@ if USE_CLOUDINARY:
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
+
 else:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
