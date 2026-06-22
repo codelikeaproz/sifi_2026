@@ -1,6 +1,6 @@
 from rest_framework.pagination import PageNumberPagination
 
-ALLOWED_PAGE_SIZES = {10, 20, 50, 100}
+ALLOWED_PAGE_SIZES = {6, 9, 10, 20, 50, 100}
 
 
 class OptionalPageNumberPagination(PageNumberPagination):

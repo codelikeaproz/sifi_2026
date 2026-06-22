@@ -242,7 +242,31 @@ export interface PaginatedScholars {
 
 export type PageSize = 10 | 20 | 50 | 100;
 
+export type PublicPageSize = 6 | 9 | 10;
+
 export const PAGE_SIZE_OPTIONS: PageSize[] = [10, 20, 50, 100];
+
+export async function getPublicScholarsPaginated(params: {
+  page: number;
+  pageSize: PublicPageSize;
+  search?: string;
+  region?: RegionFilterValue;
+}): Promise<PaginatedScholars> {
+  const query = new URLSearchParams({
+    page: String(params.page),
+    page_size: String(params.pageSize),
+  });
+  if (params.search?.trim()) {
+    query.set("search", params.search.trim());
+  }
+  if (params.region && params.region !== "all") {
+    query.set("region", params.region);
+  }
+
+  const res = await fetch(apiUrl(`/api/scholars/?${query.toString()}`));
+  if (!res.ok) throw new Error("Failed to load scholars");
+  return res.json() as Promise<PaginatedScholars>;
+}
 
 export async function getScholarsPaginated(params: {
   page: number;

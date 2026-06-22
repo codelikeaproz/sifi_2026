@@ -401,5 +401,3 @@ Default admin (local): `admin` / `admin123` (after `createsuperuser` + `ensure_a
 - `backend/media/` — replaced by Cloudinary in production (gitignored)
 
 - `sifi_2026/node_modules/` and `dist/` — built on Vercel
-
-

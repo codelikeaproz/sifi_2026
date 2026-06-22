@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Search } from "lucide-react";
 
 import { ScholarGridView } from "@/components/ScholarGridView";
@@ -15,7 +15,12 @@ import { Input } from "@/components/ui/input";
 import { TestimonialSlider, type Review } from "@/components/ui/testimonial-slider-1";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { getScholars, type RegionFilterValue, type Scholar } from "@/lib/api";
+import {
+  getPublicScholarsPaginated,
+  type PublicPageSize,
+  type RegionFilterValue,
+  type Scholar,
+} from "@/lib/api";
 import { fallbackReviews } from "@/pages/TestimonialSliderDemo";
 
 function toSliderReview(s: Scholar): Review {
@@ -34,9 +39,22 @@ function toSliderReview(s: Scholar): Review {
   };
 }
 
+function pageSizeForLayout(
+  layoutMode: ScholarLayoutMode,
+  isDesktop: boolean
+): PublicPageSize {
+  if (!isDesktop || layoutMode === "single") return 10;
+  if (layoutMode === "grid-9") return 9;
+  return 6;
+}
+
 export default function HomePage() {
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<ScholarLayoutMode>(readStoredLayout);
   const [region, setRegion] = useState<RegionFilterValue>("all");
@@ -44,24 +62,45 @@ export default function HomePage() {
   const debouncedSearch = useDebounce(search, 300);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
+  const pageSize = pageSizeForLayout(layoutMode, isDesktop);
+
+  const fetchPage = useCallback(
+    async (pageNum: number, append: boolean) => {
+      const data = await getPublicScholarsPaginated({
+        page: pageNum,
+        pageSize,
+        region,
+        search: debouncedSearch,
+      });
+      const mapped = data.results.map(toSliderReview);
+      setReviews((prev) => (append ? [...prev, ...mapped] : mapped));
+      setTotalCount(data.count);
+      setHasMore(data.next != null);
+      setPage(pageNum);
+    },
+    [pageSize, region, debouncedSearch]
+  );
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
 
-    getScholars({ region, search: debouncedSearch })
-      .then((data) => {
-        if (cancelled) return;
-        setReviews(data.map(toSliderReview));
-      })
+    fetchPage(1, false)
       .catch(() => {
         if (cancelled) return;
         if (!debouncedSearch) {
           setError("Could not reach the API. Showing sample scholars.");
           setReviews(fallbackReviews);
+          setTotalCount(fallbackReviews.length);
+          setHasMore(false);
+          setPage(1);
         } else {
           setError("Search failed. Please try again.");
           setReviews([]);
+          setTotalCount(0);
+          setHasMore(false);
+          setPage(1);
         }
       })
       .finally(() => {
@@ -71,7 +110,19 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [region, debouncedSearch]);
+  }, [fetchPage, debouncedSearch]);
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      await fetchPage(page + 1, true);
+    } catch {
+      setError("Failed to load more scholars.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [hasMore, loadingMore, page, fetchPage]);
 
   function handleLayoutChange(mode: ScholarLayoutMode) {
     setLayoutMode(mode);
@@ -80,6 +131,7 @@ export default function HomePage() {
 
   const showSlider = !isDesktop || layoutMode === "single";
   const showGrid = isDesktop && layoutMode !== "single";
+  const listKey = `${region}-${debouncedSearch}-${pageSize}`;
 
   return (
     <div className="flex min-h-svh flex-col bg-background">
@@ -120,9 +172,22 @@ export default function HomePage() {
           </div>
         ) : (
           <>
-            {showSlider && <TestimonialSlider reviews={reviews} />}
+            {showSlider && (
+              <TestimonialSlider
+                key={listKey}
+                reviews={reviews}
+                totalCount={totalCount}
+                onNearEnd={loadMore}
+              />
+            )}
             {showGrid && (
-              <ScholarGridView reviews={reviews} layoutMode={layoutMode} />
+              <ScholarGridView
+                reviews={reviews}
+                totalCount={totalCount}
+                hasMore={hasMore}
+                loadingMore={loadingMore}
+                onLoadMore={loadMore}
+              />
             )}
           </>
         )}
