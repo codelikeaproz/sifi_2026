@@ -43,6 +43,7 @@ USE_CLOUDINARY = bool(CLOUDINARY_CLOUD_NAME)
 
 if USE_CLOUDINARY:
     INSTALLED_APPS = [
+        "cloudinary_storage",
         "cloudinary",
         *INSTALLED_APPS,
     ]

@@ -173,6 +173,18 @@ async function authFetch(
   return res;
 }
 
+async function readApiError(res: Response): Promise<string> {
+  const text = await res.text().catch(() => "");
+  if (text) {
+    try {
+      return formatApiError(JSON.parse(text));
+    } catch {
+      return `${res.status} ${res.statusText || "Request failed"}`;
+    }
+  }
+  return `${res.status} ${res.statusText || "Request failed"}`;
+}
+
 export async function login(
   username: string,
   password: string
@@ -266,8 +278,7 @@ export async function createScholar(formData: FormData): Promise<Scholar> {
     body: formData,
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(formatApiError(err));
+    throw new Error(await readApiError(res));
   }
   return res.json() as Promise<Scholar>;
 }
@@ -281,8 +292,7 @@ export async function updateScholar(
     body: formData,
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(formatApiError(err));
+    throw new Error(await readApiError(res));
   }
   return res.json() as Promise<Scholar>;
 }
@@ -292,8 +302,7 @@ export async function deleteScholar(id: number): Promise<void> {
     method: "DELETE",
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(formatApiError(err));
+    throw new Error(await readApiError(res));
   }
 }
 
@@ -347,8 +356,7 @@ export async function createUser(data: {
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(formatApiError(err));
+    throw new Error(await readApiError(res));
   }
   return res.json() as Promise<ManagedUser>;
 }
@@ -368,8 +376,7 @@ export async function updateUser(
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(formatApiError(err));
+    throw new Error(await readApiError(res));
   }
   return res.json() as Promise<ManagedUser>;
 }
@@ -379,8 +386,7 @@ export async function deleteUser(id: number): Promise<void> {
     method: "DELETE",
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(formatApiError(err));
+    throw new Error(await readApiError(res));
   }
 }
 
