@@ -132,7 +132,7 @@ No backend code changes are needed — Django reads `DATABASE_URL` via `dj-datab
 
 |-------|-----|
 
-| Build fails on `migrate` | Switch from Session pooler to **Direct connection** URI in Supabase → Database → Connection string |
+| Build fails on `migrate` with `Network is unreachable` for `db.<project-ref>.supabase.co` | Use the **Session pooler** URI, not the Direct connection URI. The direct Supabase host can resolve to IPv6, which Render may not reach. |
 
 | `SSL connection required` | Append `?sslmode=require` to the end of `DATABASE_URL` |
 
