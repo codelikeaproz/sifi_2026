@@ -384,6 +384,13 @@ export async function updateSchool(
   return res.json() as Promise<ReferenceRecord>;
 }
 
+export async function deleteSchool(id: number): Promise<void> {
+  const res = await authFetch(apiUrl(`/api/schools/${id}/`), {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(await readApiError(res));
+}
+
 export async function listDegrees(params?: {
   region?: Region;
   search?: string;
@@ -421,6 +428,13 @@ export async function updateDegree(
   });
   if (!res.ok) throw new Error(await readApiError(res));
   return res.json() as Promise<ReferenceRecord>;
+}
+
+export async function deleteDegree(id: number): Promise<void> {
+  const res = await authFetch(apiUrl(`/api/degrees/${id}/`), {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(await readApiError(res));
 }
 
 export const LATIN_HONOR_OPTIONS: { value: string; label: string }[] = [

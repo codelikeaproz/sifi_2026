@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Pencil, Trash2 } from "lucide-react";
 
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import {
   createDegree,
   createSchool,
+  deleteDegree,
+  deleteSchool,
   listDegrees,
   listSchools,
   REGION_OPTIONS,
@@ -23,6 +27,7 @@ import {
 } from "@/lib/api";
 
 type ReferenceSectionProps = {
+  kind: "school" | "degree";
   title: string;
   records: ReferenceRecord[];
   loading: boolean;
@@ -37,9 +42,11 @@ type ReferenceSectionProps = {
   onEditCancel: () => void;
   onEditValueChange: (value: string) => void;
   onEditSave: () => Promise<void>;
+  onDeleteRequest: (record: ReferenceRecord) => void;
 };
 
 function ReferenceSection({
+  kind,
   title,
   records,
   loading,
@@ -54,6 +61,7 @@ function ReferenceSection({
   onEditCancel,
   onEditValueChange,
   onEditSave,
+  onDeleteRequest,
 }: ReferenceSectionProps) {
   return (
     <Card>
@@ -119,9 +127,38 @@ function ReferenceSection({
                         {(record.scholarCount ?? 0) === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <Button type="button" variant="outline" onClick={() => onEditStart(record)}>
-                      Rename
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        aria-label={`Rename ${kind} ${record.name}`}
+                        title={`Rename ${record.name}`}
+                        onClick={() => onEditStart(record)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        aria-label={
+                          record.scholarCount
+                            ? `Cannot delete ${kind} ${record.name} because it is in use`
+                            : `Delete ${kind} ${record.name}`
+                        }
+                        title={
+                          record.scholarCount
+                            ? "Delete is only available when unused"
+                            : `Delete ${record.name}`
+                        }
+                        disabled={(record.scholarCount ?? 0) > 0}
+                        className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive disabled:text-muted-foreground"
+                        onClick={() => onDeleteRequest(record)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -156,6 +193,12 @@ export default function ReferenceDataPage() {
   const [editingSchoolName, setEditingSchoolName] = useState("");
   const [editingDegreeId, setEditingDegreeId] = useState<number | null>(null);
   const [editingDegreeName, setEditingDegreeName] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<
+    | { kind: "school"; record: ReferenceRecord }
+    | { kind: "degree"; record: ReferenceRecord }
+    | null
+  >(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadSchools = useCallback(async () => {
     setLoadingSchools(true);
@@ -239,6 +282,31 @@ export default function ReferenceDataPage() {
     }
   }
 
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
+    try {
+      if (deleteTarget.kind === "school") {
+        await deleteSchool(deleteTarget.record.id);
+        success("School deleted", `${deleteTarget.record.name} was removed.`);
+        await loadSchools();
+      } else {
+        await deleteDegree(deleteTarget.record.id);
+        success("Degree deleted", `${deleteTarget.record.name} was removed.`);
+        await loadDegrees();
+      }
+      setDeleteTarget(null);
+    } catch (err) {
+      showError(
+        "Delete failed",
+        err instanceof Error ? err.message : "Request failed"
+      );
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="flex min-h-svh flex-col bg-background">
       <SiteHeader showAdmin={false} />
@@ -286,6 +354,7 @@ export default function ReferenceDataPage() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <ReferenceSection
+            kind="school"
             title="Schools"
             records={schools}
             loading={loadingSchools}
@@ -306,9 +375,11 @@ export default function ReferenceDataPage() {
             }}
             onEditValueChange={setEditingSchoolName}
             onEditSave={handleRenameSchool}
+            onDeleteRequest={(record) => setDeleteTarget({ kind: "school", record })}
           />
 
           <ReferenceSection
+            kind="degree"
             title="Degrees"
             records={degrees}
             loading={loadingDegrees}
@@ -329,9 +400,24 @@ export default function ReferenceDataPage() {
             }}
             onEditValueChange={setEditingDegreeName}
             onEditSave={handleRenameDegree}
+            onDeleteRequest={(record) => setDeleteTarget({ kind: "degree", record })}
           />
         </div>
       </main>
+      <DeleteConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setDeleteTarget(null);
+        }}
+        title={`Delete ${deleteTarget?.kind ?? "record"}?`}
+        description={
+          deleteTarget
+            ? `This will permanently remove ${deleteTarget.record.name}. This action cannot be undone.`
+            : ""
+        }
+        onConfirm={handleDeleteConfirm}
+        confirming={deleting}
+      />
       <SiteFooter />
     </div>
   );

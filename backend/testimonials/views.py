@@ -1,4 +1,5 @@
 from rest_framework import mixins, viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import SearchFilter
 from rest_framework.parsers import FormParser, MultiPartParser
 
@@ -55,6 +56,7 @@ class ScholarViewSet(viewsets.ModelViewSet):
 
 class RegionScopedMasterViewSet(
     mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -78,6 +80,11 @@ class RegionScopedMasterViewSet(
         if region:
             qs = qs.filter(region=region)
         return qs
+
+    def perform_destroy(self, instance):
+        if instance.scholars.exists():
+            raise PermissionDenied("Cannot delete a record that is in use by scholars.")
+        instance.delete()
 
 
 class SchoolViewSet(RegionScopedMasterViewSet):
