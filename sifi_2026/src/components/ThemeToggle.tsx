@@ -18,8 +18,6 @@ export function ThemeToggle({ className }: { className?: string }) {
   return (
     <button
       type="button"
-      role="switch"
-      aria-checked={isDark}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       onClick={toggleTheme}
       className={cn(

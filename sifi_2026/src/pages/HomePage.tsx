@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
+import { MobileCelebrationOverlay } from "@/components/MobileCelebrationOverlay";
 import { ScholarGridView } from "@/components/ScholarGridView";
 import {
   persistLayout,
@@ -58,6 +59,7 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const { celebrating: gridCelebrating, triggerCelebration } = useMobileCelebration();
+  const layoutOnlyRefetchRef = useRef(false);
 
   const pageSize = pageSizeForLayout(layoutMode);
 
@@ -80,7 +82,12 @@ export default function HomePage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    const silentRefetch = layoutOnlyRefetchRef.current;
+    layoutOnlyRefetchRef.current = false;
+
+    if (!silentRefetch) {
+      setLoading(true);
+    }
     setError(null);
 
     fetchPage(1, false)
@@ -122,8 +129,11 @@ export default function HomePage() {
   }, [hasMore, loadingMore, page, fetchPage]);
 
   function handleLayoutChange(mode: ScholarLayoutMode) {
-    if (mode !== layoutMode && (mode === "grid-6" || mode === "grid-9")) {
-      triggerCelebration({ allowDesktop: true });
+    if (mode !== layoutMode) {
+      layoutOnlyRefetchRef.current = reviews.length > 0;
+      if (mode === "grid-6" || mode === "grid-9") {
+        triggerCelebration({ allowDesktop: true });
+      }
     }
     setLayoutMode(mode);
     persistLayout(mode);
@@ -137,7 +147,12 @@ export default function HomePage() {
     <div className="flex min-h-svh flex-col bg-background">
       <SiteHeader />
 
-      <main className="flex-1">
+      <main className="relative flex-1">
+        <MobileCelebrationOverlay
+          active={gridCelebrating && showGrid}
+          showOnDesktop
+          className="fixed inset-0 z-60 rounded-none"
+        />
         <div className="mx-auto max-w-6xl space-y-3 px-4 pt-4 sm:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <RegionFilter value={region} onChange={setRegion} />
@@ -187,7 +202,6 @@ export default function HomePage() {
                 hasMore={hasMore}
                 loadingMore={loadingMore}
                 onLoadMore={loadMore}
-                celebrating={gridCelebrating}
               />
             )}
           </>

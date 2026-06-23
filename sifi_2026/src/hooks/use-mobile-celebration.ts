@@ -26,11 +26,11 @@ export function useMobileCelebration() {
       if (!options?.allowDesktop && !isMobileViewport()) return;
 
       fireMobileScholarConfetti();
-    setCelebrating(true);
+      setCelebrating(true);
 
-    if (celebrationTimerRef.current !== undefined) {
-      window.clearTimeout(celebrationTimerRef.current);
-    }
+      if (celebrationTimerRef.current !== undefined) {
+        window.clearTimeout(celebrationTimerRef.current);
+      }
 
       celebrationTimerRef.current = window.setTimeout(
         () => setCelebrating(false),
