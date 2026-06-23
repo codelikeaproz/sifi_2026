@@ -1,8 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteLogo } from "@/components/SiteHeader";
+import { AdminShell } from "@/components/AdminShell";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -119,28 +118,28 @@ export default function UserFormPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-svh flex-col bg-background">
-        <main className="flex flex-1 items-center justify-center text-muted-foreground">
+      <AdminShell>
+        <div className="flex min-h-[400px] items-center justify-center text-muted-foreground">
           Loading…
-        </main>
-        <SiteFooter />
-      </div>
+        </div>
+      </AdminShell>
     );
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-background">
-      <main className="flex flex-1 flex-col items-center p-4 sm:p-6">
-        <div className="mb-6">
-          <SiteLogo className="h-10 w-auto md:h-12" />
-        </div>
-        <Card className="w-full max-w-lg">
+    <AdminShell
+      title={isEdit ? "Edit user" : "New user"}
+      description={
+        isEdit
+          ? "Update account details. Leave password blank to keep the current one."
+          : "Create an admin or regional head officer account."
+      }
+    >
+      <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle>{isEdit ? "Edit user" : "New user"}</CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Update account details. Leave password blank to keep the current one."
-                : "Create an admin or regional head officer account."}
+              Save account details and permissions.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -227,8 +226,6 @@ export default function UserFormPage() {
             </form>
           </CardContent>
         </Card>
-      </main>
-      <SiteFooter />
-    </div>
+    </AdminShell>
   );
 }

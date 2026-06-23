@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
 
+import { AdminShell } from "@/components/AdminShell";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -171,7 +169,7 @@ function ReferenceSection({
 }
 
 export default function ReferenceDataPage() {
-  const { assignedRegion, canManageUsers, logout } = useAuth();
+  const { assignedRegion } = useAuth();
   const { success, error: showError } = useToast();
 
   const [region, setRegion] = useState<Region>(assignedRegion ?? "mindanao");
@@ -308,30 +306,11 @@ export default function ReferenceDataPage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-background">
-      <SiteHeader showAdmin={false} />
-      <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 p-4 md:p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-primary">Schools and Degrees</h1>
-            <p className="text-sm text-muted-foreground">
-              Create and rename reusable reference data for scholar entries.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            <Button variant="outline" className="w-full sm:w-auto" asChild>
-              <Link to="/admin/scholars">Back to scholars</Link>
-            </Button>
-            {canManageUsers && (
-              <Button variant="outline" className="w-full sm:w-auto" asChild>
-                <Link to="/admin/users">Users</Link>
-              </Button>
-            )}
-            <Button variant="outline" className="w-full sm:w-auto" onClick={logout}>
-              Log out
-            </Button>
-          </div>
-        </div>
+    <AdminShell
+      title="Schools and Degrees"
+      description="Create and rename reusable reference data for scholar entries."
+    >
+      <div className="space-y-6">
 
         <div className="flex flex-wrap gap-1.5">
           {(assignedRegion
@@ -403,7 +382,7 @@ export default function ReferenceDataPage() {
             onDeleteRequest={(record) => setDeleteTarget({ kind: "degree", record })}
           />
         </div>
-      </main>
+      </div>
       <DeleteConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
@@ -418,7 +397,6 @@ export default function ReferenceDataPage() {
         onConfirm={handleDeleteConfirm}
         confirming={deleting}
       />
-      <SiteFooter />
-    </div>
+    </AdminShell>
   );
 }

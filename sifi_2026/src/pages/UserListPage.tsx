@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { AdminShell } from "@/components/AdminShell";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -58,7 +57,7 @@ function UserActions({
 }
 
 export default function UserListPage() {
-  const { logout, user: currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const { success, error: showError } = useToast();
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,31 +118,16 @@ export default function UserListPage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col overflow-x-hidden bg-background">
-      <SiteHeader showAdmin={false} />
-      <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 p-4 md:p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-primary">Users</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage admin and head officer accounts.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            <Button variant="outline" className="w-full sm:w-auto" asChild>
-              <Link to="/admin/scholars">Scholars</Link>
-            </Button>
-            <Button variant="outline" className="w-full sm:w-auto" asChild>
-              <Link to="/">View site</Link>
-            </Button>
-            <Button variant="outline" className="w-full sm:w-auto" onClick={logout}>
-              Log out
-            </Button>
-            <Button className="col-span-2 w-full sm:col-span-1 sm:w-auto" asChild>
-              <Link to="/admin/users/new">Add user</Link>
-            </Button>
-          </div>
-        </div>
+    <AdminShell
+      title="Users"
+      description="Manage admin and head officer accounts."
+      actions={
+        <Button className="w-full sm:w-auto" asChild>
+          <Link to="/admin/users/new">Add user</Link>
+        </Button>
+      }
+    >
+      <div className="space-y-6">
 
         {loading && <p className="text-muted-foreground">Loading…</p>}
         {error && <p className="text-destructive">{error}</p>}
@@ -222,7 +206,7 @@ export default function UserListPage() {
             </div>
           </>
         )}
-      </main>
+      </div>
       <DeleteConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
@@ -237,7 +221,6 @@ export default function UserListPage() {
         onConfirm={handleDeleteConfirm}
         confirming={deleting}
       />
-      <SiteFooter />
-    </div>
+    </AdminShell>
   );
 }

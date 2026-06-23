@@ -2,9 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 
+import { AdminShell } from "@/components/AdminShell";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
 import { RegionFilter } from "@/components/RegionFilter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,7 +72,7 @@ function ScholarActions({
 }
 
 export default function ScholarListPage() {
-  const { logout, canManageUsers, assignedRegion } = useAuth();
+  const { assignedRegion } = useAuth();
   const { success, error: showError } = useToast();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -161,36 +160,16 @@ export default function ScholarListPage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col overflow-x-hidden bg-background">
-      <SiteHeader showAdmin={false} />
-      <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 p-4 md:p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-primary">Scholars</h1>
-            <p className="text-sm text-muted-foreground">
-              Create, edit, and delete scholar profiles.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            <Button variant="outline" className="w-full sm:w-auto" asChild>
-              <Link to="/">View site</Link>
-            </Button>
-            <Button variant="outline" className="w-full sm:w-auto" asChild>
-              <Link to="/admin/reference-data">Schools & Degrees</Link>
-            </Button>
-            {canManageUsers && (
-              <Button variant="outline" className="w-full sm:w-auto" asChild>
-                <Link to="/admin/users">Users</Link>
-              </Button>
-            )}
-            <Button variant="outline" className="w-full sm:w-auto" onClick={logout}>
-              Log out
-            </Button>
-            <Button className="col-span-2 w-full sm:col-span-1 sm:w-auto" asChild>
-              <Link to="/admin/scholars/new">Add new</Link>
-            </Button>
-          </div>
-        </div>
+    <AdminShell
+      title="Scholars"
+      description="Create, edit, and delete scholar profiles."
+      actions={
+        <Button className="w-full sm:w-auto" asChild>
+          <Link to="/admin/scholars/new">Add new</Link>
+        </Button>
+      }
+    >
+      <div className="space-y-6">
 
         <RegionFilter
           value={region}
@@ -341,7 +320,7 @@ export default function ScholarListPage() {
             </div>
           </>
         )}
-      </main>
+      </div>
       <DeleteConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
@@ -356,7 +335,6 @@ export default function ScholarListPage() {
         onConfirm={handleDeleteConfirm}
         confirming={deleting}
       />
-      <SiteFooter />
-    </div>
+    </AdminShell>
   );
 }

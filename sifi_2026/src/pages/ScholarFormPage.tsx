@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { AdminShell } from "@/components/AdminShell";
 import { ReferenceAutocomplete } from "@/components/ReferenceAutocomplete";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,8 +34,6 @@ import {
   type ReferenceRecord,
   type Region,
 } from "@/lib/api";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteLogo } from "@/components/SiteHeader";
 import { useAuth } from "@/context/AuthContext";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/hooks/use-toast";
@@ -193,28 +192,28 @@ export default function ScholarFormPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-svh flex-col bg-background">
-        <main className="flex flex-1 items-center justify-center text-muted-foreground">
+      <AdminShell>
+        <div className="flex min-h-[400px] items-center justify-center text-muted-foreground">
           Loading…
-        </main>
-        <SiteFooter />
-      </div>
+        </div>
+      </AdminShell>
     );
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-background">
-      <main className="flex flex-1 flex-col items-center p-4 sm:p-6">
-      <div className="mb-6">
-        <SiteLogo className="h-10 w-auto md:h-12" />
-      </div>
+    <AdminShell
+      title={isEdit ? "Edit scholar" : "New scholar"}
+      description={
+        isEdit
+          ? "Update fields below. Leave photo empty to keep the current one."
+          : "Add graduation photo and scholar details."
+      }
+    >
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>{isEdit ? "Edit scholar" : "New scholar"}</CardTitle>
           <CardDescription>
-            {isEdit
-              ? "Update fields below. Leave photo empty to keep the current one."
-              : "Add graduation photo and scholar details."}
+            Save scholar profile details and graduation photo.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -396,8 +395,6 @@ export default function ScholarFormPage() {
           </form>
         </CardContent>
       </Card>
-      </main>
-      <SiteFooter />
-    </div>
+    </AdminShell>
   );
 }
