@@ -1,4 +1,11 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 export type ToastVariant = "success" | "error";
 
@@ -54,12 +61,25 @@ export function useToastContext() {
 export function useToast() {
   const { showToast, dismissToast } = useToastContext();
 
-  return {
-    toast: showToast,
-    success: (title: string, description?: string) =>
+  const success = useCallback(
+    (title: string, description?: string) =>
       showToast({ title, description, variant: "success" }),
-    error: (title: string, description?: string) =>
+    [showToast]
+  );
+
+  const error = useCallback(
+    (title: string, description?: string) =>
       showToast({ title, description, variant: "error" }),
-    dismiss: dismissToast,
-  };
+    [showToast]
+  );
+
+  return useMemo(
+    () => ({
+      toast: showToast,
+      success,
+      error,
+      dismiss: dismissToast,
+    }),
+    [showToast, success, error, dismissToast]
+  );
 }
