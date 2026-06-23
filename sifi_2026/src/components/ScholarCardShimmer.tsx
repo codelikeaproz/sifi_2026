@@ -5,19 +5,26 @@ import { cn } from "@/lib/utils";
 const SHIMMER_SWEEP_MS = 3000;
 const SHIMMER_INTERVAL_MIN_MS = 8000;
 const SHIMMER_INTERVAL_SPREAD_MS = 4000;
+const INITIAL_DELAY_CARD_MS = 1500;
+const INITIAL_DELAY_HERO_MS = 800;
+
+export type ScholarCardShimmerVariant = "card" | "hero";
 
 interface ScholarCardShimmerProps {
   enabled: boolean;
+  variant?: ScholarCardShimmerVariant;
   staggerIndex?: number;
   className?: string;
 }
 
 export function ScholarCardShimmer({
   enabled,
+  variant = "card",
   staggerIndex = 0,
   className,
 }: ScholarCardShimmerProps) {
   const [active, setActive] = useState(false);
+  const isHero = variant === "hero";
 
   useEffect(() => {
     if (!enabled) return;
@@ -41,17 +48,21 @@ export function ScholarCardShimmer({
       }, delay);
     };
 
-    const initialDelay = window.setTimeout(() => {
-      runSweep();
-      scheduleNext();
-    }, 1500 + staggerIndex * 400);
+    const initialDelay = window.setTimeout(
+      () => {
+        runSweep();
+        scheduleNext();
+      },
+      (isHero ? INITIAL_DELAY_HERO_MS : INITIAL_DELAY_CARD_MS) +
+        staggerIndex * 400
+    );
 
     return () => {
       window.clearTimeout(initialDelay);
       window.clearTimeout(sweepTimer);
       window.clearTimeout(intervalTimer);
     };
-  }, [enabled, staggerIndex]);
+  }, [enabled, isHero, staggerIndex]);
 
   if (!enabled) return null;
 
@@ -66,8 +77,9 @@ export function ScholarCardShimmer({
       <div
         className={cn(
           "absolute -inset-full",
-          "bg-linear-to-br from-transparent via-white/10 to-transparent",
-          active && "animate-scholar-shimmer"
+          isHero ? "scholar-shimmer-hero-band" : "scholar-shimmer-card-band",
+          active &&
+            (isHero ? "animate-scholar-shimmer-hero" : "animate-scholar-shimmer")
         )}
       />
     </div>

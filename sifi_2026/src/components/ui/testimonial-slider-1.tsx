@@ -227,6 +227,7 @@ export const TestimonialSlider = ({
           <ScholarCardShimmer
             key={index}
             enabled={shimmerEnabled}
+            variant="hero"
             staggerIndex={0}
             className="rounded-lg"
           />
