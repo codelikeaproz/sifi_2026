@@ -1,9 +1,13 @@
+from django.db.models import Count
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import SearchFilter
 from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from .models import Degree, Scholar, School
+from .models import Degree, Region, Scholar, School
 from .pagination import OptionalPageNumberPagination
 from .permissions import RegionScopedMasterPermission, ScholarPermission
 from .profile_utils import get_assigned_region, is_admin
@@ -52,6 +56,90 @@ class ScholarViewSet(viewsets.ModelViewSet):
                 serializer.save(region=assigned)
                 return
         serializer.save()
+
+    def _analytics_queryset(self, user, region_param=None):
+        qs = Scholar.objects.all()
+        if is_admin(user):
+            if region_param:
+                qs = qs.filter(region=region_param)
+            return qs, region_param
+
+        assigned = get_assigned_region(user)
+        if not assigned:
+            return qs.none(), None
+        return qs.filter(region=assigned), assigned
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="analytics",
+        permission_classes=[IsAuthenticated],
+    )
+    def analytics(self, request):
+        region_param = request.query_params.get("region")
+        qs, scope_region = self._analytics_queryset(request.user, region_param)
+
+        if scope_region:
+            scope_label = Region(scope_region).label
+        else:
+            scope_label = "All regions"
+
+        total = qs.count()
+        with_year_set = qs.filter(year_graduated__isnull=False).count()
+
+        region_counts = {
+            row["region"]: row["count"]
+            for row in qs.values("region").annotate(count=Count("id"))
+        }
+
+        if is_admin(request.user) and not scope_region:
+            by_region = [
+                {
+                    "region": value,
+                    "regionLabel": label,
+                    "count": region_counts.get(value, 0),
+                }
+                for value, label in Region.choices
+            ]
+        else:
+            by_region = [
+                {
+                    "region": row["region"],
+                    "regionLabel": Region(row["region"]).label,
+                    "count": row["count"],
+                }
+                for row in qs.values("region")
+                .annotate(count=Count("id"))
+                .order_by("region")
+            ]
+
+        by_year = [
+            {
+                "year": row["year_graduated"],
+                "yearLabel": (
+                    str(row["year_graduated"])
+                    if row["year_graduated"] is not None
+                    else "Not set"
+                ),
+                "count": row["count"],
+            }
+            for row in qs.values("year_graduated")
+            .annotate(count=Count("id"))
+            .order_by("year_graduated")
+        ]
+
+        return Response(
+            {
+                "scope": {
+                    "region": scope_region,
+                    "regionLabel": scope_label,
+                },
+                "total": total,
+                "withYearSet": with_year_set,
+                "byRegion": by_region,
+                "byYear": by_year,
+            }
+        )
 
 
 class RegionScopedMasterViewSet(

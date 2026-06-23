@@ -345,6 +345,27 @@ export async function deleteScholar(id: number): Promise<void> {
   }
 }
 
+export interface ScholarAnalytics {
+  scope: { region: Region | null; regionLabel: string };
+  total: number;
+  withYearSet: number;
+  byRegion: { region: Region; regionLabel: string; count: number }[];
+  byYear: { year: number | null; yearLabel: string; count: number }[];
+}
+
+export async function getScholarAnalytics(params?: {
+  region?: Region;
+}): Promise<ScholarAnalytics> {
+  const query = new URLSearchParams();
+  if (params?.region) query.set("region", params.region);
+  const qs = query.toString();
+  const res = await authFetch(
+    apiUrl(`/api/scholars/analytics/${qs ? `?${qs}` : ""}`)
+  );
+  if (!res.ok) throw new Error(await readApiError(res));
+  return res.json() as Promise<ScholarAnalytics>;
+}
+
 export async function listSchools(params?: {
   region?: Region;
   search?: string;

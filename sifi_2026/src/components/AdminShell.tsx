@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, Menu, Users, GraduationCap, BookOpen, ExternalLink } from "lucide-react";
+import { LogOut, Menu, Users, GraduationCap, BookOpen, ExternalLink, BarChart3 } from "lucide-react";
 
 import sifiLogo from "@/assets/sifi_logo.png";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -121,6 +121,11 @@ export function AdminShell({
         label: "Schools & Degrees",
         to: "/admin/reference-data",
         icon: <BookOpen className="size-4" />,
+      },
+      {
+        label: "Analytics",
+        to: "/admin/analytics",
+        icon: <BarChart3 className="size-4" />,
       },
       ...(canManageUsers
         ? [

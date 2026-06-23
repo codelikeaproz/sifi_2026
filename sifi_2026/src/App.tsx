@@ -5,6 +5,7 @@ import { AdminRoute } from "@/components/AdminRoute";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import ReferenceDataPage from "@/pages/ReferenceDataPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
 import ScholarFormPage from "@/pages/ScholarFormPage";
 import ScholarListPage from "@/pages/ScholarListPage";
 import UserFormPage from "@/pages/UserFormPage";
@@ -19,6 +20,7 @@ export function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/admin/scholars" element={<ScholarListPage />} />
           <Route path="/admin/reference-data" element={<ReferenceDataPage />} />
+          <Route path="/admin/analytics" element={<AnalyticsPage />} />
           <Route path="/admin/scholars/new" element={<ScholarFormPage />} />
           <Route
             path="/admin/scholars/:id/edit"
