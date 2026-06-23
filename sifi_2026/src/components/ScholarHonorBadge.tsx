@@ -40,6 +40,14 @@ function honorShortLabel(tier: HonorTier): string {
   return "Cum Laude";
 }
 
+/** Latin honor line on white / light backgrounds (solo text column). */
+export const honorTextOnLightClassName =
+  "font-medium italic text-[#9a7b2e]";
+
+/** Latin honor line on dark green card gradients. */
+export const honorTextOnDarkClassName =
+  "font-medium italic text-[#f0d78c] drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]";
+
 interface ScholarHonorBadgeProps {
   latinHonorLabel?: string;
   size?: "sm" | "md";

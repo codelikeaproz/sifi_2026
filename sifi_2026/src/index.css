@@ -136,14 +136,25 @@
 @keyframes scholar-shimmer {
   0% {
     transform: translate(-40%, -40%) rotate(25deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.45;
+  }
+  80% {
+    opacity: 0.35;
   }
   100% {
     transform: translate(40%, 40%) rotate(25deg);
+    opacity: 0;
   }
 }
 
 @layer utilities {
   .animate-scholar-shimmer {
-    animation: scholar-shimmer 0.85s ease-in-out forwards;
+    animation: scholar-shimmer 3s ease-in-out forwards;
   }
 }

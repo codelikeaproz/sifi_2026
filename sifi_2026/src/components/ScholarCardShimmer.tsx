@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-const SHIMMER_SWEEP_MS = 900;
+const SHIMMER_SWEEP_MS = 3000;
 const SHIMMER_INTERVAL_MIN_MS = 8000;
 const SHIMMER_INTERVAL_SPREAD_MS = 4000;
 
@@ -65,9 +65,9 @@ export function ScholarCardShimmer({
     >
       <div
         className={cn(
-          "absolute -inset-full opacity-0 transition-opacity duration-200",
-          "bg-linear-to-br from-transparent via-white/20 to-transparent",
-          active && "animate-scholar-shimmer opacity-100"
+          "absolute -inset-full",
+          "bg-linear-to-br from-transparent via-white/10 to-transparent",
+          active && "animate-scholar-shimmer"
         )}
       />
     </div>

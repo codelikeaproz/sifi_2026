@@ -5,7 +5,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MobileCelebrationOverlay } from "@/components/MobileCelebrationOverlay";
 import { ScholarCardShimmer } from "@/components/ScholarCardShimmer";
-import { ScholarHonorBadge } from "@/components/ScholarHonorBadge";
+import {
+  honorTextOnLightClassName,
+  ScholarHonorBadge,
+} from "@/components/ScholarHonorBadge";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   fireMobileScholarConfetti,
@@ -160,7 +163,7 @@ export const TestimonialSlider = ({
         className
       )}
     >
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 h-full">
+      <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-12">
         <div className="md:col-span-3 flex flex-col justify-between order-2 md:order-1">
           <div className="flex flex-row md:flex-col justify-between md:justify-start space-x-4 md:space-x-0 md:space-y-4">
             <span className="text-sm text-muted-foreground font-mono">
@@ -195,7 +198,7 @@ export const TestimonialSlider = ({
           )}
         </div>
 
-        <div className="md:col-span-4 relative h-80 min-h-[400px] md:min-h-[500px] md:bg-muted/30 md:rounded-lg order-1 md:order-2 overflow-hidden rounded-lg">
+        <div className="relative order-1 h-80 min-h-[400px] overflow-hidden rounded-lg md:order-2 md:col-span-4 md:min-h-[500px] md:self-start md:rounded-lg md:bg-muted/30">
           <AnimatePresence initial={false} custom={direction}>
             <motion.img
               key={index}
@@ -223,8 +226,8 @@ export const TestimonialSlider = ({
           <MobileCelebrationOverlay active={celebrating && isMobile} />
         </div>
 
-        <div className="md:col-span-5 flex flex-col justify-between md:pl-8 order-3 md:order-3">
-          <div className="relative overflow-hidden pt-4 md:pt-24 min-h-[200px]">
+        <div className="order-3 flex flex-col justify-between md:col-span-5 md:self-start md:pl-8">
+          <div className="relative min-h-[200px] overflow-hidden pt-4 md:pt-0">
             <AnimatePresence initial={false} custom={direction} mode="wait">
               <motion.div
                 key={index}
@@ -249,7 +252,7 @@ export const TestimonialSlider = ({
                   {activeReview.fullName ?? activeReview.name}
                 </h3>
                 {activeReview.latinHonorLabel && (
-                  <p className="mt-1 text-sm font-medium italic text-[#e8d5a3]">
+                  <p className={cn("mt-1 text-sm", honorTextOnLightClassName)}>
                     {activeReview.latinHonorLabel}
                   </p>
                 )}

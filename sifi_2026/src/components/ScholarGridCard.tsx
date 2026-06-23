@@ -2,7 +2,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 
 import { ScholarCardShimmer } from "@/components/ScholarCardShimmer";
-import { honorTierFromLabel, ScholarHonorBadge } from "@/components/ScholarHonorBadge";
+import {
+  honorTextOnDarkClassName,
+  honorTierFromLabel,
+  ScholarHonorBadge,
+} from "@/components/ScholarHonorBadge";
 import type { Review } from "@/components/ui/testimonial-slider-1";
 import { useCardGlow } from "@/hooks/use-card-glow";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -160,12 +164,11 @@ export function ScholarGridCard({
 
         <div
           className={cn(
-            "absolute inset-x-0 bottom-0 z-20 border-t border-white/10 px-3 pb-3 pt-12 text-primary-foreground sm:px-4 sm:pb-4 sm:pt-16",
-            "bg-linear-to-t from-[#15803d]/90 via-[#1b7339]/55 to-transparent backdrop-blur-md",
+            "absolute inset-x-0 bottom-0 z-20 px-3 pb-3 pt-12 text-primary-foreground sm:px-4 sm:pb-4 sm:pt-16",
+            "bg-linear-to-t from-primary/95 via-primary/70 to-transparent",
             "transition-all duration-300",
-            canHover &&
-              "group-hover:from-[#15803d]/95 group-hover:via-[#1b7339]/70 group-hover:pt-24",
-            !canHover && expanded && "from-[#15803d]/95 via-[#1b7339]/70 pt-20 sm:pt-24"
+            canHover && "group-hover:from-primary group-hover:via-primary/95 group-hover:pt-24",
+            !canHover && expanded && "from-primary via-primary/95 pt-20 sm:pt-24"
           )}
         >
           <div
@@ -206,7 +209,12 @@ export function ScholarGridCard({
               </p>
             )}
             {review.latinHonorLabel && (
-              <p className="mt-1 text-[10px] font-medium italic text-[#e8d5a3] sm:text-xs">
+              <p
+                className={cn(
+                  "mt-1 text-[10px] sm:text-xs",
+                  honorTextOnDarkClassName
+                )}
+              >
                 {review.latinHonorLabel}
               </p>
             )}
