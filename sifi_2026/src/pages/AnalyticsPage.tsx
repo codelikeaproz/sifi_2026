@@ -31,7 +31,15 @@ const yearChartConfig = {
   },
 } satisfies ChartConfig;
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
+function StatCard({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+}) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -39,8 +47,9 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
           {label}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-1">
         <p className="text-3xl font-semibold tabular-nums text-primary">{value}</p>
+        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       </CardContent>
     </Card>
   );
@@ -107,6 +116,10 @@ export default function AnalyticsPage() {
     region === "all" &&
     regionsWithData.length > 1;
 
+  const missingClassYear = analytics
+    ? analytics.total - analytics.withYearSet
+    : 0;
+
   return (
     <AdminShell
       title="Analytics"
@@ -142,10 +155,29 @@ export default function AnalyticsPage() {
           </Card>
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <StatCard label="Total graduates" value={analytics.total} />
-              <StatCard label="With graduation year" value={analytics.withYearSet} />
-              <StatCard label="Scope" value={analytics.scope.regionLabel} />
+            <div
+              className={
+                missingClassYear > 0
+                  ? "grid gap-4 sm:grid-cols-2"
+                  : "max-w-sm"
+              }
+            >
+              <StatCard
+                label="Total graduates"
+                value={analytics.total}
+                hint={
+                  missingClassYear === 0
+                    ? "All profiles include a class year."
+                    : undefined
+                }
+              />
+              {missingClassYear > 0 && (
+                <StatCard
+                  label="Missing class year"
+                  value={missingClassYear}
+                  hint="Edit these scholar profiles to add a class year."
+                />
+              )}
             </div>
 
             <div
@@ -200,7 +232,7 @@ export default function AnalyticsPage() {
 
               <Card className={showRegionPie ? undefined : "lg:col-span-2"}>
                 <CardHeader>
-                  <CardTitle>Graduates by year</CardTitle>
+                  <CardTitle>Graduates by class year</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {analytics.byYear.length === 0 ? (
