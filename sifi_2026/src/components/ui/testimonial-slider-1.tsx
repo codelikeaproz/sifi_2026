@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MobileCelebrationOverlay } from "@/components/MobileCelebrationOverlay";
+import { ScholarCardShimmer } from "@/components/ScholarCardShimmer";
+import { ScholarHonorBadge } from "@/components/ScholarHonorBadge";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   fireMobileScholarConfetti,
@@ -80,6 +82,7 @@ export const TestimonialSlider = ({
   const index = Math.min(currentIndex, reviews.length - 1);
   const activeReview = reviews[index];
   const mobileTilt = isMobile && !prefersReducedMotion;
+  const shimmerEnabled = !prefersReducedMotion;
 
   function triggerMobileCelebration() {
     if (!isMobileViewport()) return;
@@ -192,7 +195,7 @@ export const TestimonialSlider = ({
           )}
         </div>
 
-        <div className="md:col-span-4 relative h-80 min-h-[400px] md:min-h-[500px] md:bg-muted/30 md:rounded-lg order-1 md:order-2">
+        <div className="md:col-span-4 relative h-80 min-h-[400px] md:min-h-[500px] md:bg-muted/30 md:rounded-lg order-1 md:order-2 overflow-hidden rounded-lg">
           <AnimatePresence initial={false} custom={direction}>
             <motion.img
               key={index}
@@ -207,6 +210,16 @@ export const TestimonialSlider = ({
               className="absolute inset-0 w-full h-full object-cover md:object-contain md:object-center rounded-lg"
             />
           </AnimatePresence>
+          <ScholarCardShimmer
+            key={index}
+            enabled={shimmerEnabled}
+            staggerIndex={0}
+            className="rounded-lg"
+          />
+          <ScholarHonorBadge
+            latinHonorLabel={activeReview.latinHonorLabel}
+            size="md"
+          />
           <MobileCelebrationOverlay active={celebrating && isMobile} />
         </div>
 
@@ -236,7 +249,7 @@ export const TestimonialSlider = ({
                   {activeReview.fullName ?? activeReview.name}
                 </h3>
                 {activeReview.latinHonorLabel && (
-                  <p className="text-sm font-medium text-muted-foreground mt-1">
+                  <p className="mt-1 text-sm font-medium italic text-[#e8d5a3]">
                     {activeReview.latinHonorLabel}
                   </p>
                 )}

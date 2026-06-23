@@ -132,3 +132,18 @@
     @apply font-sans;
   }
 }
+
+@keyframes scholar-shimmer {
+  0% {
+    transform: translate(-40%, -40%) rotate(25deg);
+  }
+  100% {
+    transform: translate(40%, 40%) rotate(25deg);
+  }
+}
+
+@layer utilities {
+  .animate-scholar-shimmer {
+    animation: scholar-shimmer 0.85s ease-in-out forwards;
+  }
+}

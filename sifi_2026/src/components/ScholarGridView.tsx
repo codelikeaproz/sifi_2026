@@ -36,9 +36,9 @@ export function ScholarGridView({
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 md:gap-6">
-        {reviews.map((review) => (
-          <ScholarGridCard key={review.id} review={review} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-6">
+        {reviews.map((review, index) => (
+          <ScholarGridCard key={review.id} review={review} index={index} />
         ))}
       </div>
 

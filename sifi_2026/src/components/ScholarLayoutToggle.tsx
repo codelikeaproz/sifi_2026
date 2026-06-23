@@ -20,6 +20,12 @@ export function readStoredLayout(): ScholarLayoutMode {
   } catch {
     // ignore storage errors
   }
+  if (
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 767px)").matches
+  ) {
+    return "grid-6";
+  }
   return "single";
 }
 
@@ -44,10 +50,7 @@ export function ScholarLayoutToggle({
 }: ScholarLayoutToggleProps) {
   return (
     <div
-      className={cn(
-        "hidden items-center gap-1 md:flex",
-        className
-      )}
+      className={cn("flex items-center gap-1", className)}
       role="group"
       aria-label="Scholar layout"
     >

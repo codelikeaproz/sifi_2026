@@ -14,7 +14,6 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Input } from "@/components/ui/input";
 import { TestimonialSlider, type Review } from "@/components/ui/testimonial-slider-1";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   getPublicScholarsPaginated,
   type PublicPageSize,
@@ -39,11 +38,8 @@ function toSliderReview(s: Scholar): Review {
   };
 }
 
-function pageSizeForLayout(
-  layoutMode: ScholarLayoutMode,
-  isDesktop: boolean
-): PublicPageSize {
-  if (!isDesktop || layoutMode === "single") return 10;
+function pageSizeForLayout(layoutMode: ScholarLayoutMode): PublicPageSize {
+  if (layoutMode === "single") return 10;
   if (layoutMode === "grid-9") return 9;
   return 6;
 }
@@ -60,9 +56,8 @@ export default function HomePage() {
   const [region, setRegion] = useState<RegionFilterValue>("all");
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
-  const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const pageSize = pageSizeForLayout(layoutMode, isDesktop);
+  const pageSize = pageSizeForLayout(layoutMode);
 
   const fetchPage = useCallback(
     async (pageNum: number, append: boolean) => {
@@ -129,8 +124,8 @@ export default function HomePage() {
     persistLayout(mode);
   }
 
-  const showSlider = !isDesktop || layoutMode === "single";
-  const showGrid = isDesktop && layoutMode !== "single";
+  const showSlider = layoutMode === "single";
+  const showGrid = layoutMode !== "single";
   const listKey = `${region}-${debouncedSearch}-${pageSize}`;
 
   return (
