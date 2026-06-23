@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-import { ScholarCardShimmer } from "@/components/ScholarCardShimmer";
 import {
   honorTextOnDarkClassName,
   honorTierFromLabel,
@@ -33,7 +32,6 @@ export function ScholarGridCard({
   const [expanded, setExpanded] = useState(false);
 
   const motionEnabled = !prefersReducedMotion;
-  const shimmerEnabled = motionEnabled;
   const isActive = canHover ? glow.active : expanded;
 
   function handleCardClick() {
@@ -146,8 +144,6 @@ export function ScholarGridCard({
           )}
           aria-hidden
         />
-
-        <ScholarCardShimmer enabled={shimmerEnabled} staggerIndex={index} />
 
         <img
           src={review.imageSrc}

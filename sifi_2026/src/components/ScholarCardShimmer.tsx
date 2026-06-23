@@ -6,15 +6,31 @@ const SHIMMER_SWEEP_MS = 3000;
 const SHIMMER_INTERVAL_MIN_MS = 8000;
 const SHIMMER_INTERVAL_SPREAD_MS = 4000;
 const INITIAL_DELAY_CARD_MS = 1500;
-const INITIAL_DELAY_HERO_MS = 800;
+const INITIAL_DELAY_BRIGHT_MS = 800;
 
-export type ScholarCardShimmerVariant = "card" | "hero";
+export type ScholarCardShimmerVariant = "card" | "hero" | "grid";
 
 interface ScholarCardShimmerProps {
   enabled: boolean;
   variant?: ScholarCardShimmerVariant;
   staggerIndex?: number;
   className?: string;
+}
+
+function bandClassName(variant: ScholarCardShimmerVariant): string {
+  if (variant === "grid") return "scholar-shimmer-grid-band";
+  if (variant === "hero") return "scholar-shimmer-hero-band";
+  return "scholar-shimmer-card-band";
+}
+
+function animationClassName(
+  variant: ScholarCardShimmerVariant,
+  active: boolean
+): string | false {
+  if (!active) return false;
+  if (variant === "grid") return "animate-scholar-shimmer-grid";
+  if (variant === "hero") return "animate-scholar-shimmer-hero";
+  return "animate-scholar-shimmer";
 }
 
 export function ScholarCardShimmer({
@@ -24,7 +40,8 @@ export function ScholarCardShimmer({
   className,
 }: ScholarCardShimmerProps) {
   const [active, setActive] = useState(false);
-  const isHero = variant === "hero";
+  const isBright = variant === "hero" || variant === "grid";
+  const isSynced = variant === "grid";
 
   useEffect(() => {
     if (!enabled) return;
@@ -41,7 +58,7 @@ export function ScholarCardShimmer({
       const delay =
         SHIMMER_INTERVAL_MIN_MS +
         Math.random() * SHIMMER_INTERVAL_SPREAD_MS +
-        staggerIndex * 1300;
+        (isSynced ? 0 : staggerIndex * 1300);
       intervalTimer = window.setTimeout(() => {
         runSweep();
         scheduleNext();
@@ -53,8 +70,8 @@ export function ScholarCardShimmer({
         runSweep();
         scheduleNext();
       },
-      (isHero ? INITIAL_DELAY_HERO_MS : INITIAL_DELAY_CARD_MS) +
-        staggerIndex * 400
+      (isBright ? INITIAL_DELAY_BRIGHT_MS : INITIAL_DELAY_CARD_MS) +
+        (isSynced ? 0 : staggerIndex * 400)
     );
 
     return () => {
@@ -62,14 +79,15 @@ export function ScholarCardShimmer({
       window.clearTimeout(sweepTimer);
       window.clearTimeout(intervalTimer);
     };
-  }, [enabled, isHero, staggerIndex]);
+  }, [enabled, isBright, isSynced, staggerIndex]);
 
   if (!enabled) return null;
 
   return (
     <div
       className={cn(
-        "pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl",
+        "pointer-events-none absolute inset-0 z-10 overflow-hidden",
+        variant === "card" && "rounded-xl",
         className
       )}
       aria-hidden
@@ -77,9 +95,8 @@ export function ScholarCardShimmer({
       <div
         className={cn(
           "absolute -inset-full",
-          isHero ? "scholar-shimmer-hero-band" : "scholar-shimmer-card-band",
-          active &&
-            (isHero ? "animate-scholar-shimmer-hero" : "animate-scholar-shimmer")
+          bandClassName(variant),
+          animationClassName(variant, active)
         )}
       />
     </div>

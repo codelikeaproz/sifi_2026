@@ -1,6 +1,8 @@
 import { ScholarGridCard } from "@/components/ScholarGridCard";
+import { ScholarCardShimmer } from "@/components/ScholarCardShimmer";
 import { Button } from "@/components/ui/button";
 import type { Review } from "@/components/ui/testimonial-slider-1";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
 interface ScholarGridViewProps {
@@ -20,6 +22,8 @@ export function ScholarGridView({
   onLoadMore,
   className,
 }: ScholarGridViewProps) {
+  const shimmerEnabled = !useMediaQuery("(prefers-reduced-motion: reduce)");
+
   return (
     <section
       className={cn(
@@ -36,10 +40,13 @@ export function ScholarGridView({
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-6">
-        {reviews.map((review, index) => (
-          <ScholarGridCard key={review.id} review={review} index={index} />
-        ))}
+      <div className="relative overflow-hidden">
+        <div className="relative z-0 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-6">
+          {reviews.map((review, index) => (
+            <ScholarGridCard key={review.id} review={review} index={index} />
+          ))}
+        </div>
+        <ScholarCardShimmer enabled={shimmerEnabled} variant="grid" />
       </div>
 
       {hasMore && (
