@@ -11,6 +11,7 @@ const fallbackReviews: Review[] = [
     affiliation: "University of the Philippines",
     schoolName: "University of the Philippines",
     degreeName: "Bachelor of Information Technology",
+    yearGraduated: 2026,
     latinHonorLabel: "Summa Cum Laude",
     quote:
       "This journey taught me that perseverance and community make every challenge worth facing.",
@@ -28,6 +29,7 @@ const fallbackReviews: Review[] = [
     affiliation: "Ateneo de Manila University",
     schoolName: "Ateneo de Manila University",
     degreeName: "Bachelor of Science in Computer Science",
+    yearGraduated: 2026,
     latinHonorLabel: "Magna Cum Laude",
     quote:
       "To my family and mentors — thank you for believing in me when I doubted myself.",
@@ -45,6 +47,7 @@ const fallbackReviews: Review[] = [
     affiliation: "De La Salle University",
     schoolName: "De La Salle University",
     degreeName: "Bachelor of Business Administration",
+    yearGraduated: 2026,
     quote:
       "Graduation is not the end — it is the beginning of serving others with what we have learned.",
     message:

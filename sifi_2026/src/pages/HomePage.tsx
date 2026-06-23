@@ -32,6 +32,7 @@ function toSliderReview(s: Scholar): Review {
     affiliation: s.schoolName ?? s.school,
     schoolName: s.schoolName ?? s.school,
     degreeName: s.degreeName,
+    yearGraduated: s.year_graduated,
     quote: s.message,
     message: s.message,
     latinHonorLabel: s.latinHonorLabel,

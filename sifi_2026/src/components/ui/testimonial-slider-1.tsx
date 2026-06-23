@@ -22,6 +22,7 @@ export type Review = {
   schoolName?: string;
   latinHonorLabel?: string;
   degreeName?: string;
+  yearGraduated?: number | null;
   fullName?: string;
   message?: string;
 };
@@ -238,6 +239,11 @@ export const TestimonialSlider = ({
                 {activeReview.degreeName && (
                   <p className="text-sm font-medium text-muted-foreground mt-1">
                     {activeReview.degreeName}
+                  </p>
+                )}
+                {activeReview.yearGraduated && (
+                  <p className="mt-1 text-sm font-medium text-muted-foreground">
+                    Class of {activeReview.yearGraduated}
                   </p>
                 )}
                 <h3 className="text-xl font-semibold mt-1">

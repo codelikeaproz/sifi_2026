@@ -204,6 +204,11 @@ export function ScholarGridCard({
                 {review.degreeName}
               </p>
             )}
+            {review.yearGraduated && (
+              <p className="mt-1 text-[10px] leading-snug opacity-90 sm:text-xs">
+                Class of {review.yearGraduated}
+              </p>
+            )}
             {review.latinHonorLabel && (
               <p
                 className={cn(
