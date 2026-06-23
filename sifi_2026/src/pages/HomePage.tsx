@@ -14,6 +14,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Input } from "@/components/ui/input";
 import { TestimonialSlider, type Review } from "@/components/ui/testimonial-slider-1";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useMobileCelebration } from "@/hooks/use-mobile-celebration";
 import {
   getPublicScholarsPaginated,
   type PublicPageSize,
@@ -56,6 +57,7 @@ export default function HomePage() {
   const [region, setRegion] = useState<RegionFilterValue>("all");
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
+  const { celebrating: gridCelebrating, triggerCelebration } = useMobileCelebration();
 
   const pageSize = pageSizeForLayout(layoutMode);
 
@@ -120,6 +122,9 @@ export default function HomePage() {
   }, [hasMore, loadingMore, page, fetchPage]);
 
   function handleLayoutChange(mode: ScholarLayoutMode) {
+    if (mode !== layoutMode && (mode === "grid-6" || mode === "grid-9")) {
+      triggerCelebration();
+    }
     setLayoutMode(mode);
     persistLayout(mode);
   }
@@ -182,6 +187,7 @@ export default function HomePage() {
                 hasMore={hasMore}
                 loadingMore={loadingMore}
                 onLoadMore={loadMore}
+                celebrating={gridCelebrating}
               />
             )}
           </>

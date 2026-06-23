@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,11 +10,7 @@ import {
   ScholarHonorBadge,
 } from "@/components/ScholarHonorBadge";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import {
-  fireMobileScholarConfetti,
-  isMobileViewport,
-  MOBILE_CELEBRATION_MS,
-} from "@/lib/mobile-confetti";
+import { useMobileCelebration } from "@/hooks/use-mobile-celebration";
 
 export type Review = {
   id: string | number;
@@ -48,18 +44,9 @@ export const TestimonialSlider = ({
 }: TestimonialSliderProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("right");
-  const [celebrating, setCelebrating] = useState(false);
-  const celebrationTimerRef = useRef<number | undefined>(undefined);
+  const { celebrating, triggerCelebration } = useMobileCelebration();
   const isMobile = !useMediaQuery("(min-width: 768px)");
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
-
-  useEffect(() => {
-    return () => {
-      if (celebrationTimerRef.current !== undefined) {
-        window.clearTimeout(celebrationTimerRef.current);
-      }
-    };
-  }, []);
 
   const totalCount = totalCountProp ?? reviews.length;
 
@@ -88,22 +75,9 @@ export const TestimonialSlider = ({
   const mobileTilt = isMobile && !prefersReducedMotion;
   const shimmerEnabled = !prefersReducedMotion;
 
-  function triggerMobileCelebration() {
-    if (!isMobileViewport()) return;
-    fireMobileScholarConfetti();
-    setCelebrating(true);
-    if (celebrationTimerRef.current !== undefined) {
-      window.clearTimeout(celebrationTimerRef.current);
-    }
-    celebrationTimerRef.current = window.setTimeout(
-      () => setCelebrating(false),
-      MOBILE_CELEBRATION_MS
-    );
-  }
-
   const handleNext = () => {
     setDirection("right");
-    triggerMobileCelebration();
+    triggerCelebration();
     setCurrentIndex((prev) => {
       if (prev + 1 < reviews.length) return prev + 1;
       if (reviews.length < totalCount) {
@@ -123,7 +97,7 @@ export const TestimonialSlider = ({
   const handleThumbnailClick = (targetIndex: number) => {
     if (targetIndex === index) return;
     setDirection(targetIndex > index ? "right" : "left");
-    triggerMobileCelebration();
+    triggerCelebration();
     setCurrentIndex(targetIndex);
   };
 

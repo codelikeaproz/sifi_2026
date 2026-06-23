@@ -1,5 +1,6 @@
 import { ScholarGridCard } from "@/components/ScholarGridCard";
 import { ScholarCardShimmer } from "@/components/ScholarCardShimmer";
+import { MobileCelebrationOverlay } from "@/components/MobileCelebrationOverlay";
 import { Button } from "@/components/ui/button";
 import type { Review } from "@/components/ui/testimonial-slider-1";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -11,6 +12,7 @@ interface ScholarGridViewProps {
   hasMore: boolean;
   loadingMore?: boolean;
   onLoadMore: () => void;
+  celebrating?: boolean;
   className?: string;
 }
 
@@ -20,6 +22,7 @@ export function ScholarGridView({
   hasMore,
   loadingMore = false,
   onLoadMore,
+  celebrating = false,
   className,
 }: ScholarGridViewProps) {
   const shimmerEnabled = !useMediaQuery("(prefers-reduced-motion: reduce)");
@@ -40,13 +43,14 @@ export function ScholarGridView({
         </span>
       </div>
 
-      <div className="relative overflow-hidden">
+      <div className="relative min-h-[280px] overflow-hidden">
         <div className="relative z-0 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-6">
           {reviews.map((review, index) => (
             <ScholarGridCard key={review.id} review={review} index={index} />
           ))}
         </div>
         <ScholarCardShimmer enabled={shimmerEnabled} variant="grid" />
+        <MobileCelebrationOverlay active={celebrating} className="rounded-none" />
       </div>
 
       {hasMore && (
