@@ -1,4 +1,4 @@
-import { Crown, Medal, Sparkles, Users, type LucideIcon } from "lucide-react";
+import { Crown, Glasses, Medal, Sparkles, type LucideIcon } from "lucide-react";
 
 import type { LatinHonor } from "@/lib/api";
 
@@ -56,7 +56,7 @@ const WITTY_HONOR: Partial<Record<LatinHonor, WittyHonorConfig>> = {
   },
   cumpyansa: {
     badgeLabel: "Cumpyansa",
-    BadgeIcon: Users,
+    BadgeIcon: Glasses,
   },
 };
 
