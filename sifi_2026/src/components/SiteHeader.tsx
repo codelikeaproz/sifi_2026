@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import sifiLogo from "@/assets/sifi_logo.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 
 interface SiteHeaderProps {
@@ -17,11 +18,14 @@ export function SiteHeader({ showAdmin = true }: SiteHeaderProps) {
           className="h-9 w-auto sm:h-10 md:h-12"
         />
       </Link>
-      {showAdmin && (
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary" asChild>
-          <Link to="/admin/login">Login</Link>
-        </Button>
-      )}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <ThemeToggle />
+        {showAdmin && (
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary" asChild>
+            <Link to="/admin/login">Login</Link>
+          </Button>
+        )}
+      </div>
     </header>
   );
 }
