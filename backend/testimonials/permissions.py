@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
-from .profile_utils import is_admin
+from .profile_utils import get_assigned_region, is_admin
 
 
 class IsAdminRole(BasePermission):
@@ -19,7 +19,17 @@ class ScholarPermission(BasePermission):
             return True
         if is_admin(request.user):
             return True
-        from .profile_utils import get_assigned_region
 
+        region = get_assigned_region(request.user)
+        return region is not None and obj.region == region
+
+
+class RegionScopedMasterPermission(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        if is_admin(request.user):
+            return True
         region = get_assigned_region(request.user)
         return region is not None and obj.region == region

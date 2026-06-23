@@ -31,6 +31,15 @@ export interface ManagedUser {
   regionLabel: string;
 }
 
+export interface ReferenceRecord {
+  id: number;
+  name: string;
+  region: Region;
+  created_at?: string;
+  updated_at?: string;
+  scholarCount?: number;
+}
+
 export interface Scholar {
   id: number;
   first_name: string;
@@ -40,14 +49,17 @@ export interface Scholar {
   fullName: string;
   school: string;
   schoolName?: string;
+  schoolRefId?: number | null;
   region?: Region;
   regionLabel?: string;
   degreeName: string;
   degree_name?: string;
+  degreeRefId?: number | null;
   latinHonor: LatinHonor;
   latin_honor?: LatinHonor;
   latinHonorLabel: string;
   message: string;
+  year_graduated?: number | null;
   imageSrc: string;
   thumbnailSrc: string;
   name?: string;
@@ -59,7 +71,9 @@ export interface Scholar {
 
 const FIELD_LABELS: Record<string, string> = {
   school: "School",
+  school_id: "School",
   degree_name: "Degree Name",
+  degree_id: "Degree Name",
   degreeName: "Degree Name",
   first_name: "First Name",
   last_name: "Last Name",
@@ -72,6 +86,7 @@ const FIELD_LABELS: Record<string, string> = {
   password: "Password",
   message: "Message / Quote",
   image: "Graduation Photo",
+  year_graduated: "Year Graduated",
 };
 
 export function formatApiError(err: unknown): string {
@@ -328,6 +343,84 @@ export async function deleteScholar(id: number): Promise<void> {
   if (!res.ok) {
     throw new Error(await readApiError(res));
   }
+}
+
+export async function listSchools(params?: {
+  region?: Region;
+  search?: string;
+}): Promise<ReferenceRecord[]> {
+  const query = new URLSearchParams();
+  if (params?.region) query.set("region", params.region);
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+  const qs = query.toString();
+  const res = await authFetch(apiUrl(`/api/schools/${qs ? `?${qs}` : ""}`));
+  if (!res.ok) throw new Error(await readApiError(res));
+  return res.json() as Promise<ReferenceRecord[]>;
+}
+
+export async function createSchool(data: {
+  name: string;
+  region: Region;
+}): Promise<ReferenceRecord> {
+  const res = await authFetch(apiUrl("/api/schools/"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await readApiError(res));
+  return res.json() as Promise<ReferenceRecord>;
+}
+
+export async function updateSchool(
+  id: number,
+  data: { name?: string; region?: Region }
+): Promise<ReferenceRecord> {
+  const res = await authFetch(apiUrl(`/api/schools/${id}/`), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await readApiError(res));
+  return res.json() as Promise<ReferenceRecord>;
+}
+
+export async function listDegrees(params?: {
+  region?: Region;
+  search?: string;
+}): Promise<ReferenceRecord[]> {
+  const query = new URLSearchParams();
+  if (params?.region) query.set("region", params.region);
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+  const qs = query.toString();
+  const res = await authFetch(apiUrl(`/api/degrees/${qs ? `?${qs}` : ""}`));
+  if (!res.ok) throw new Error(await readApiError(res));
+  return res.json() as Promise<ReferenceRecord[]>;
+}
+
+export async function createDegree(data: {
+  name: string;
+  region: Region;
+}): Promise<ReferenceRecord> {
+  const res = await authFetch(apiUrl("/api/degrees/"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await readApiError(res));
+  return res.json() as Promise<ReferenceRecord>;
+}
+
+export async function updateDegree(
+  id: number,
+  data: { name?: string; region?: Region }
+): Promise<ReferenceRecord> {
+  const res = await authFetch(apiUrl(`/api/degrees/${id}/`), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await readApiError(res));
+  return res.json() as Promise<ReferenceRecord>;
 }
 
 export const LATIN_HONOR_OPTIONS: { value: string; label: string }[] = [

@@ -28,6 +28,52 @@ class UserRole(models.TextChoices):
     HEAD_OFFICER = "head_officer", "Head Officer"
 
 
+class School(models.Model):
+    name = models.CharField(max_length=200)
+    region = models.CharField(
+        max_length=20,
+        choices=Region.choices,
+        default=Region.MINDANAO,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["region", "name"],
+                name="unique_school_name_per_region",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.get_region_display()})"
+
+
+class Degree(models.Model):
+    name = models.CharField(max_length=200)
+    region = models.CharField(
+        max_length=20,
+        choices=Region.choices,
+        default=Region.MINDANAO,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["region", "name"],
+                name="unique_degree_name_per_region",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.get_region_display()})"
+
+
 class Scholar(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -35,6 +81,20 @@ class Scholar(models.Model):
     suffix = models.CharField(max_length=20, blank=True)
     school = models.CharField(max_length=200)
     degree_name = models.CharField(max_length=200)
+    school_ref = models.ForeignKey(
+        School,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="scholars",
+    )
+    degree_ref = models.ForeignKey(
+        Degree,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="scholars",
+    )
     region = models.CharField(
         max_length=20,
         choices=Region.choices,
@@ -47,6 +107,7 @@ class Scholar(models.Model):
         default="",
     )
     message = models.TextField()
+    year_graduated = models.PositiveSmallIntegerField(null=True, blank=True)
     image = models.ImageField(upload_to="scholars/")
     thumbnail = models.ImageField(upload_to="scholars/thumbs/", blank=True)
     order = models.PositiveIntegerField(default=0)

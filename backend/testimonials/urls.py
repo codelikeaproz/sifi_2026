@@ -1,12 +1,14 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import ScholarViewSet
+from .views import DegreeViewSet, ScholarViewSet, SchoolViewSet
 from .views_auth import MeView
 from .views_users import UserViewSet
 
 router = DefaultRouter()
+router.register("degrees", DegreeViewSet, basename="degree")
 router.register("scholars", ScholarViewSet, basename="scholar")
+router.register("schools", SchoolViewSet, basename="school")
 router.register("users", UserViewSet, basename="user")
 
 urlpatterns = [

@@ -1,16 +1,16 @@
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.parsers import FormParser, MultiPartParser
 
-from .models import Scholar
+from .models import Degree, Scholar, School
 from .pagination import OptionalPageNumberPagination
-from .permissions import ScholarPermission
+from .permissions import RegionScopedMasterPermission, ScholarPermission
 from .profile_utils import get_assigned_region, is_admin
-from .serializers import ScholarSerializer
+from .serializers import DegreeSerializer, ScholarSerializer, SchoolSerializer
 
 
 class ScholarViewSet(viewsets.ModelViewSet):
-    queryset = Scholar.objects.all()
+    queryset = Scholar.objects.select_related("school_ref", "degree_ref").all()
     serializer_class = ScholarSerializer
     parser_classes = [MultiPartParser, FormParser]
     pagination_class = OptionalPageNumberPagination
@@ -22,7 +22,9 @@ class ScholarViewSet(viewsets.ModelViewSet):
         "middle_initial",
         "suffix",
         "school",
+        "school_ref__name",
         "degree_name",
+        "degree_ref__name",
         "message",
         "region",
     ]
@@ -49,3 +51,40 @@ class ScholarViewSet(viewsets.ModelViewSet):
                 serializer.save(region=assigned)
                 return
         serializer.save()
+
+
+class RegionScopedMasterViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [RegionScopedMasterPermission]
+    filter_backends = [SearchFilter]
+    search_fields = ["name"]
+    pagination_class = None
+
+    def get_queryset(self):
+        qs = self.queryset.order_by("name")
+        region = self.request.query_params.get("region")
+
+        user = self.request.user
+        if user.is_authenticated and not is_admin(user):
+            assigned = get_assigned_region(user)
+            if assigned:
+                return qs.filter(region=assigned)
+
+        if region:
+            qs = qs.filter(region=region)
+        return qs
+
+
+class SchoolViewSet(RegionScopedMasterViewSet):
+    queryset = School.objects.all()
+    serializer_class = SchoolSerializer
+
+
+class DegreeViewSet(RegionScopedMasterViewSet):
+    queryset = Degree.objects.all()
+    serializer_class = DegreeSerializer

@@ -316,7 +316,30 @@ No trailing slash. Use your actual Render URL.
 
 | Delete scholar/user | Toast + dialog work |
 
+| School / Degree masters | Search, create, and rename work within the selected region |
 
+| Year Graduated | Optional for existing scholars; saves for new or edited scholars |
+
+### School / Degree migration rollout
+
+This release keeps legacy `Scholar.school` and `Scholar.degree_name` text fields for compatibility while adding:
+
+- region-scoped `School` master records
+- region-scoped `Degree` master records
+- nullable `Scholar.school_ref`
+- nullable `Scholar.degree_ref`
+- nullable `Scholar.year_graduated`
+
+After deploying:
+
+1. Run `python manage.py migrate`
+2. Verify a sample of existing scholars still shows the correct school and degree values
+3. Create a new scholar using an existing school/degree and confirm the picker reuses the record
+4. Create a new scholar with a brand new school/degree and confirm the new master record appears in `/admin/reference-data`
+5. Rename a school/degree in `/admin/reference-data` and confirm linked scholars display the updated name
+6. Leave `Year Graduated` blank for an existing scholar edit to confirm old records remain valid
+
+Do not remove legacy text fields in the same deploy. Plan the cleanup as a separate migration only after production data has been verified.
 
 ---
 

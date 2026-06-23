@@ -175,6 +175,9 @@ export default function ScholarListPage() {
             <Button variant="outline" className="w-full sm:w-auto" asChild>
               <Link to="/">View site</Link>
             </Button>
+            <Button variant="outline" className="w-full sm:w-auto" asChild>
+              <Link to="/admin/reference-data">Schools & Degrees</Link>
+            </Button>
             {canManageUsers && (
               <Button variant="outline" className="w-full sm:w-auto" asChild>
                 <Link to="/admin/users">Users</Link>

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { ReferenceAutocomplete } from "@/components/ReferenceAutocomplete";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,15 +24,19 @@ import {
   createScholar,
   fromLatinHonorValue,
   getScholar,
+  listDegrees,
+  listSchools,
   LATIN_HONOR_OPTIONS,
   REGION_OPTIONS,
   toLatinHonorValue,
   updateScholar,
+  type ReferenceRecord,
   type Region,
 } from "@/lib/api";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteLogo } from "@/components/SiteHeader";
 import { useAuth } from "@/context/AuthContext";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ScholarFormPage() {
@@ -46,17 +51,26 @@ export default function ScholarFormPage() {
   const [middleInitial, setMiddleInitial] = useState("");
   const [suffix, setSuffix] = useState("");
   const [school, setSchool] = useState("");
+  const [schoolId, setSchoolId] = useState<number | null>(null);
   const [degreeName, setDegreeName] = useState("");
+  const [degreeId, setDegreeId] = useState<number | null>(null);
   const [region, setRegion] = useState<Region>(assignedRegion ?? "mindanao");
   const [latinHonor, setLatinHonor] = useState<string>("none");
   const [message, setMessage] = useState("");
+  const [yearGraduated, setYearGraduated] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [schoolOptions, setSchoolOptions] = useState<ReferenceRecord[]>([]);
+  const [degreeOptions, setDegreeOptions] = useState<ReferenceRecord[]>([]);
+  const [loadingSchools, setLoadingSchools] = useState(false);
+  const [loadingDegrees, setLoadingDegrees] = useState(false);
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const regionValue = assignedRegion ?? region;
+  const debouncedSchoolSearch = useDebounce(school, 200);
+  const debouncedDegreeSearch = useDebounce(degreeName, 200);
 
   useEffect(() => {
     if (!id) return;
@@ -67,15 +81,64 @@ export default function ScholarFormPage() {
         setMiddleInitial(s.middle_initial ?? "");
         setSuffix(s.suffix ?? "");
         setSchool(s.schoolName ?? s.school ?? "");
+        setSchoolId(s.schoolRefId ?? null);
         setDegreeName(s.degreeName);
+        setDegreeId(s.degreeRefId ?? null);
         if (s.region) setRegion(s.region);
         setLatinHonor(fromLatinHonorValue(s.latinHonor ?? ""));
         setMessage(s.message);
+        setYearGraduated(s.year_graduated ? String(s.year_graduated) : "");
         setCurrentImageUrl(s.imageSrc);
       })
       .catch(() => setError("Failed to load scholar"))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSchoolOptions() {
+      setLoadingSchools(true);
+      try {
+        const records = await listSchools({
+          region: regionValue,
+          search: debouncedSchoolSearch,
+        });
+        if (!cancelled) setSchoolOptions(records);
+      } catch {
+        if (!cancelled) setSchoolOptions([]);
+      } finally {
+        if (!cancelled) setLoadingSchools(false);
+      }
+    }
+    void loadSchoolOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [regionValue, debouncedSchoolSearch]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadDegreeOptions() {
+      setLoadingDegrees(true);
+      try {
+        const records = await listDegrees({
+          region: regionValue,
+          search: debouncedDegreeSearch,
+        });
+        if (!cancelled) setDegreeOptions(records);
+      } catch {
+        if (!cancelled) setDegreeOptions([]);
+      } finally {
+        if (!cancelled) setLoadingDegrees(false);
+      }
+    }
+    void loadDegreeOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [regionValue, debouncedDegreeSearch]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -91,11 +154,16 @@ export default function ScholarFormPage() {
     formData.append("last_name", lastName);
     formData.append("middle_initial", middleInitial);
     formData.append("suffix", suffix);
+    if (schoolId) formData.append("school_id", String(schoolId));
     formData.append("school", school);
+    if (degreeId) formData.append("degree_id", String(degreeId));
     formData.append("degree_name", degreeName);
     formData.append("region", regionValue);
     formData.append("latin_honor", toLatinHonorValue(latinHonor));
     formData.append("message", message);
+    if (yearGraduated.trim()) {
+      formData.append("year_graduated", yearGraduated.trim());
+    }
     if (image) formData.append("image", image);
 
     setSubmitting(true);
@@ -192,30 +260,69 @@ export default function ScholarFormPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="school">School / University</Label>
-              <Input
+              <ReferenceAutocomplete
                 id="school"
+                label="School / University"
                 value={school}
-                onChange={(e) => setSchool(e.target.value)}
+                onValueChange={(value) => {
+                  setSchool(value);
+                  setSchoolId(null);
+                }}
+                onSelectOption={(option) => {
+                  setSchool(option.name);
+                  setSchoolId(option.id);
+                }}
+                selectedId={schoolId}
+                options={schoolOptions}
+                loading={loadingSchools}
                 placeholder="University of the Philippines"
+                helperText="Search existing schools in this region. Typing a new name will add it when you save."
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="degree_name">Degree Name</Label>
-              <Input
+              <ReferenceAutocomplete
                 id="degree_name"
+                label="Degree Name"
                 value={degreeName}
-                onChange={(e) => setDegreeName(e.target.value)}
+                onValueChange={(value) => {
+                  setDegreeName(value);
+                  setDegreeId(null);
+                }}
+                onSelectOption={(option) => {
+                  setDegreeName(option.name);
+                  setDegreeId(option.id);
+                }}
+                selectedId={degreeId}
+                options={degreeOptions}
+                loading={loadingDegrees}
                 placeholder="Bachelor of Information Technology"
+                helperText="Search existing degrees in this region. Typing a new name will add it when you save."
                 required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="year_graduated">Year Graduated</Label>
+              <Input
+                id="year_graduated"
+                type="number"
+                inputMode="numeric"
+                min="1900"
+                max="2100"
+                value={yearGraduated}
+                onChange={(e) => setYearGraduated(e.target.value)}
+                placeholder="2026"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="region">Region</Label>
               <Select
                 value={regionValue}
-                onValueChange={(v) => setRegion(v as Region)}
+                onValueChange={(v) => {
+                  setRegion(v as Region);
+                  setSchoolId(null);
+                  setDegreeId(null);
+                }}
                 disabled={Boolean(assignedRegion)}
               >
                 <SelectTrigger id="region" className="w-full">
