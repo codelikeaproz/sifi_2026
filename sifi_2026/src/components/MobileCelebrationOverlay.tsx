@@ -37,11 +37,14 @@ function createFallingPhrases(): FallingPhrase[] {
 interface MobileCelebrationOverlayProps {
   active: boolean;
   className?: string;
+  /** When true, falling phrases show on md+ viewports (e.g. grid layout toggle). */
+  showOnDesktop?: boolean;
 }
 
 export function MobileCelebrationOverlay({
   active,
   className,
+  showOnDesktop = false,
 }: MobileCelebrationOverlayProps) {
   const [fallingPhrases, setFallingPhrases] = useState<FallingPhrase[]>([]);
 
@@ -58,7 +61,8 @@ export function MobileCelebrationOverlay({
   return (
     <div
       className={cn(
-        "absolute inset-0 z-20 overflow-hidden rounded-lg pointer-events-none md:hidden",
+        "absolute inset-0 z-20 overflow-hidden rounded-lg pointer-events-none",
+        !showOnDesktop && "md:hidden",
         className
       )}
       aria-live="polite"

@@ -123,7 +123,7 @@ export default function HomePage() {
 
   function handleLayoutChange(mode: ScholarLayoutMode) {
     if (mode !== layoutMode && (mode === "grid-6" || mode === "grid-9")) {
-      triggerCelebration();
+      triggerCelebration({ allowDesktop: true });
     }
     setLayoutMode(mode);
     persistLayout(mode);

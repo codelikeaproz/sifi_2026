@@ -50,7 +50,11 @@ export function ScholarGridView({
           ))}
         </div>
         <ScholarCardShimmer enabled={shimmerEnabled} variant="grid" />
-        <MobileCelebrationOverlay active={celebrating} className="rounded-none" />
+        <MobileCelebrationOverlay
+          active={celebrating}
+          showOnDesktop
+          className="rounded-none"
+        />
       </div>
 
       {hasMore && (

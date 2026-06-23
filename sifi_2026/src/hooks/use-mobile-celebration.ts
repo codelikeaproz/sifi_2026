@@ -20,21 +20,25 @@ export function useMobileCelebration() {
     };
   }, []);
 
-  const triggerCelebration = useCallback(() => {
-    if (!isMobileViewport() || prefersReducedMotion) return;
+  const triggerCelebration = useCallback(
+    (options?: { allowDesktop?: boolean }) => {
+      if (prefersReducedMotion) return;
+      if (!options?.allowDesktop && !isMobileViewport()) return;
 
-    fireMobileScholarConfetti();
+      fireMobileScholarConfetti();
     setCelebrating(true);
 
     if (celebrationTimerRef.current !== undefined) {
       window.clearTimeout(celebrationTimerRef.current);
     }
 
-    celebrationTimerRef.current = window.setTimeout(
-      () => setCelebrating(false),
-      MOBILE_CELEBRATION_MS
-    );
-  }, [prefersReducedMotion]);
+      celebrationTimerRef.current = window.setTimeout(
+        () => setCelebrating(false),
+        MOBILE_CELEBRATION_MS
+      );
+    },
+    [prefersReducedMotion]
+  );
 
   return { celebrating, triggerCelebration };
 }

@@ -160,7 +160,7 @@ export function ScholarGridCard({
 
         <div
           className={cn(
-            "absolute inset-x-0 bottom-0 z-20 px-3 pb-3 pt-12 text-primary-foreground sm:px-4 sm:pb-4 sm:pt-16",
+            "absolute inset-x-0 bottom-0 z-20 px-3 pb-3 pt-12 text-white sm:px-4 sm:pb-4 sm:pt-16",
             "bg-linear-to-t from-primary/95 via-primary/70 to-transparent",
             "transition-all duration-300",
             canHover && "group-hover:from-primary group-hover:via-primary/95 group-hover:pt-24",
