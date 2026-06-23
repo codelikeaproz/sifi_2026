@@ -9,7 +9,7 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ showAdmin = true }: SiteHeaderProps) {
   return (
-    <header className="flex items-center justify-between border-b border-primary/20 bg-background px-4 py-3 sm:px-6">
+    <header className="sticky top-0 z-50 flex items-center justify-between border-b border-primary/20 bg-background px-4 py-3 sm:px-6">
       <Link to="/">
         <img
           src={sifiLogo}
