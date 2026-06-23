@@ -12,6 +12,7 @@ interface AdminShellProps {
   title?: string;
   description?: string;
   actions?: ReactNode;
+  contentClassName?: string;
   children: ReactNode;
 }
 
@@ -98,6 +99,7 @@ export function AdminShell({
   title,
   description,
   actions,
+  contentClassName,
   children,
 }: AdminShellProps) {
   const { canManageUsers, logout } = useAuth();
@@ -192,7 +194,12 @@ export function AdminShell({
 
         <main className="flex-1 p-4 md:p-6">
           {(title || description || actions) && (
-            <div className="mx-auto mb-6 flex w-full max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div
+              className={cn(
+                "mx-auto mb-6 flex w-full max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between",
+                contentClassName
+              )}
+            >
               <div>
                 {title && <h1 className="text-2xl font-semibold text-primary">{title}</h1>}
                 {description && (
@@ -207,7 +214,9 @@ export function AdminShell({
               </div>
             </div>
           )}
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+          <div className={cn("mx-auto w-full max-w-6xl", contentClassName)}>
+            {children}
+          </div>
         </main>
         <SiteFooter />
       </div>

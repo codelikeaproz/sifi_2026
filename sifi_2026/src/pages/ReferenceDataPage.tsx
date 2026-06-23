@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pencil, Search, Trash2 } from "lucide-react";
 
 import { AdminShell } from "@/components/AdminShell";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +22,7 @@ import {
   updateDegree,
   updateSchool,
 } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type ReferenceSectionProps = {
   kind: "school" | "degree";
@@ -61,106 +61,150 @@ function ReferenceSection({
   onEditSave,
   onDeleteRequest,
 }: ReferenceSectionProps) {
+  const singular = title.toLowerCase().slice(0, -1);
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
+    <Card className="flex flex-col">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-base font-semibold">{title}</h2>
+          <span className="text-sm text-muted-foreground">
+            · {loading ? "…" : records.length}
+          </span>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor={`${title}-new`}>Add new</Label>
-          <div className="flex flex-col gap-2 sm:flex-row">
+      <CardContent className="flex flex-1 flex-col gap-4">
+        {/* Mobile: stacked search + add */}
+        <div className="flex flex-col gap-3 md:hidden">
+          <div className="relative">
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              id={`${title}-new`}
+              id={`${title}-search-mobile`}
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={`Search ${title.toLowerCase()}`}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Input
+              id={`${title}-new-mobile`}
               value={createValue}
               onChange={(e) => onCreateValueChange(e.target.value)}
-              placeholder={`Add a ${title.toLowerCase().slice(0, -1)}`}
+              placeholder={`Add a ${singular}`}
+              className="min-w-0 flex-1"
             />
-            <Button type="button" onClick={() => void onCreate()} className="sm:w-auto">
+            <Button type="button" onClick={() => void onCreate()} className="shrink-0">
               Add
             </Button>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor={`${title}-search`}>Search</Label>
+        {/* Desktop: combined toolbar */}
+        <div className="hidden gap-2 md:flex">
+          <div className="relative min-w-0 flex-1">
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id={`${title}-search`}
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={`Search ${title.toLowerCase()}`}
+              className="pl-9"
+            />
+          </div>
           <Input
-            id={`${title}-search`}
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={`Search ${title.toLowerCase()}`}
+            id={`${title}-new`}
+            value={createValue}
+            onChange={(e) => onCreateValueChange(e.target.value)}
+            placeholder={`New ${singular}`}
+            className="w-44 shrink-0 lg:w-52"
           />
+          <Button type="button" onClick={() => void onCreate()} className="shrink-0">
+            Add
+          </Button>
         </div>
 
-        <div className="space-y-2">
+        <div className="max-h-[min(60vh,640px)] min-h-48 flex-1 overflow-y-auto rounded-md border border-border">
           {loading ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
+            <p className="px-4 py-6 text-sm text-muted-foreground">Loading…</p>
           ) : records.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No records yet.</p>
+            <p className="px-4 py-6 text-sm text-muted-foreground">No records yet.</p>
           ) : (
-            records.map((record) => (
-              <div
-                key={record.id}
-                className="rounded-md border border-border p-3"
-              >
-                {editingId === record.id ? (
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <Input
-                      value={editingValue}
-                      onChange={(e) => onEditValueChange(e.target.value)}
-                    />
-                    <Button type="button" onClick={() => void onEditSave()}>
-                      Save
-                    </Button>
-                    <Button type="button" variant="outline" onClick={onEditCancel}>
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="font-medium">{record.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Used by {record.scholarCount ?? 0} scholar
+            <ul className="divide-y divide-border">
+              {records.map((record) => (
+                <li key={record.id}>
+                  {editingId === record.id ? (
+                    <div className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
+                      <Input
+                        value={editingValue}
+                        onChange={(e) => onEditValueChange(e.target.value)}
+                        className="min-w-0 flex-1"
+                      />
+                      <div className="flex gap-2">
+                        <Button type="button" onClick={() => void onEditSave()}>
+                          Save
+                        </Button>
+                        <Button type="button" variant="outline" onClick={onEditCancel}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 px-3 py-2.5 md:gap-4 md:px-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{record.name}</p>
+                        <p className="text-xs text-muted-foreground md:hidden">
+                          Used by {record.scholarCount ?? 0} scholar
+                          {(record.scholarCount ?? 0) === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                      <p className="hidden shrink-0 text-sm text-muted-foreground md:block">
+                        {record.scholarCount ?? 0} scholar
                         {(record.scholarCount ?? 0) === 1 ? "" : "s"}
                       </p>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          aria-label={`Rename ${kind} ${record.name}`}
+                          title={`Rename ${record.name}`}
+                          onClick={() => onEditStart(record)}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className={cn(
+                            "size-8",
+                            (record.scholarCount ?? 0) > 0
+                              ? "text-muted-foreground"
+                              : "text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          )}
+                          aria-label={
+                            record.scholarCount
+                              ? `Cannot delete ${kind} ${record.name} because it is in use`
+                              : `Delete ${kind} ${record.name}`
+                          }
+                          title={
+                            record.scholarCount
+                              ? "Delete is only available when unused"
+                              : `Delete ${record.name}`
+                          }
+                          disabled={(record.scholarCount ?? 0) > 0}
+                          onClick={() => onDeleteRequest(record)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        aria-label={`Rename ${kind} ${record.name}`}
-                        title={`Rename ${record.name}`}
-                        onClick={() => onEditStart(record)}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        aria-label={
-                          record.scholarCount
-                            ? `Cannot delete ${kind} ${record.name} because it is in use`
-                            : `Delete ${kind} ${record.name}`
-                        }
-                        title={
-                          record.scholarCount
-                            ? "Delete is only available when unused"
-                            : `Delete ${record.name}`
-                        }
-                        disabled={(record.scholarCount ?? 0) > 0}
-                        className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive disabled:text-muted-foreground"
-                        onClick={() => onDeleteRequest(record)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       </CardContent>
@@ -197,6 +241,11 @@ export default function ReferenceDataPage() {
     | null
   >(null);
   const [deleting, setDeleting] = useState(false);
+
+  const regionLabel = useMemo(
+    () => REGION_OPTIONS.find((option) => option.value === region)?.label ?? region,
+    [region]
+  );
 
   const loadSchools = useCallback(async () => {
     setLoadingSchools(true);
@@ -305,33 +354,40 @@ export default function ReferenceDataPage() {
     }
   }
 
+  const regionOptions = assignedRegion
+    ? REGION_OPTIONS.filter((option) => option.value === assignedRegion)
+    : REGION_OPTIONS;
+
   return (
     <AdminShell
       title="Schools and Degrees"
       description="Create and rename reusable reference data for scholar entries."
     >
       <div className="space-y-6">
-
-        <div className="flex flex-wrap gap-1.5">
-          {(assignedRegion
-            ? REGION_OPTIONS.filter((option) => option.value === assignedRegion)
-            : REGION_OPTIONS
-          ).map((option) => (
-            <Button
-              key={option.value}
-              type="button"
-              size="sm"
-              variant={region === option.value ? "default" : "outline"}
-              className="rounded-full px-3"
-              disabled={Boolean(assignedRegion)}
-              onClick={() => setRegion(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
+        <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {regionOptions.map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                variant={region === option.value ? "default" : "outline"}
+                className="rounded-full px-3"
+                disabled={Boolean(assignedRegion)}
+                onClick={() => setRegion(option.value)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {loadingSchools || loadingDegrees
+              ? `Loading ${regionLabel} reference data…`
+              : `Showing ${regionLabel} · ${schools.length} schools, ${degrees.length} degrees`}
+          </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid items-start gap-6 lg:grid-cols-2">
           <ReferenceSection
             kind="school"
             title="Schools"

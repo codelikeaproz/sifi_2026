@@ -1,16 +1,10 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AdminShell } from "@/components/AdminShell";
 import { ReferenceAutocomplete } from "@/components/ReferenceAutocomplete";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -37,6 +31,21 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/hooks/use-toast";
+
+function FormSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-4">
+      <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
 
 export default function ScholarFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -192,7 +201,7 @@ export default function ScholarFormPage() {
 
   if (loading) {
     return (
-      <AdminShell>
+      <AdminShell contentClassName="max-w-2xl">
         <div className="flex min-h-[400px] items-center justify-center text-muted-foreground">
           Loading…
         </div>
@@ -202,6 +211,7 @@ export default function ScholarFormPage() {
 
   return (
     <AdminShell
+      contentClassName="max-w-2xl"
       title={isEdit ? "Edit scholar" : "New scholar"}
       description={
         isEdit
@@ -209,56 +219,53 @@ export default function ScholarFormPage() {
           : "Add graduation photo and scholar details."
       }
     >
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle>{isEdit ? "Edit scholar" : "New scholar"}</CardTitle>
-          <CardDescription>
-            Save scholar profile details and graduation photo.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="first_name">First Name</Label>
-                <Input
-                  id="first_name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                />
+      <Card className="w-full">
+        <CardContent className="pt-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <FormSection title="Personal details">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="first_name">First Name</Label>
+                  <Input
+                    id="first_name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last_name">Last Name</Label>
+                  <Input
+                    id="last_name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name</Label>
-                <Input
-                  id="last_name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="middle_initial">Middle Initial</Label>
+                  <Input
+                    id="middle_initial"
+                    value={middleInitial}
+                    onChange={(e) => setMiddleInitial(e.target.value)}
+                    placeholder="M."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="suffix">Suffix</Label>
+                  <Input
+                    id="suffix"
+                    value={suffix}
+                    onChange={(e) => setSuffix(e.target.value)}
+                    placeholder="Jr., III"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="middle_initial">Middle Initial</Label>
-                <Input
-                  id="middle_initial"
-                  value={middleInitial}
-                  onChange={(e) => setMiddleInitial(e.target.value)}
-                  placeholder="M."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="suffix">Suffix</Label>
-                <Input
-                  id="suffix"
-                  value={suffix}
-                  onChange={(e) => setSuffix(e.target.value)}
-                  placeholder="Jr., III"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
+            </FormSection>
+
+            <FormSection title="Education">
               <ReferenceAutocomplete
                 id="school"
                 label="School / University"
@@ -278,8 +285,6 @@ export default function ScholarFormPage() {
                 helperText="Search existing schools in this region. Typing a new name will add it when you save."
                 required
               />
-            </div>
-            <div className="space-y-2">
               <ReferenceAutocomplete
                 id="degree_name"
                 label="Degree Name"
@@ -299,97 +304,104 @@ export default function ScholarFormPage() {
                 helperText="Search existing degrees in this region. Typing a new name will add it when you save."
                 required
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="year_graduated">Year Graduated</Label>
-              <Input
-                id="year_graduated"
-                type="number"
-                inputMode="numeric"
-                min="1900"
-                max="2100"
-                value={yearGraduated}
-                onChange={(e) => setYearGraduated(e.target.value)}
-                placeholder="2026"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="region">Region</Label>
-              <Select
-                value={regionValue}
-                onValueChange={(v) => {
-                  setRegion(v as Region);
-                  setSchoolId(null);
-                  setDegreeId(null);
-                }}
-                disabled={Boolean(assignedRegion)}
-              >
-                <SelectTrigger id="region" className="w-full">
-                  <SelectValue placeholder="Select region" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REGION_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="latin_honor">Latin Honor</Label>
-              <Select
-                value={latinHonor}
-                onValueChange={setLatinHonor}
-              >
-                <SelectTrigger id="latin_honor" className="w-full">
-                  <SelectValue placeholder="Select honor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LATIN_HONOR_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="message">Message / Quote</Label>
-              <Textarea
-                id="message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                required
-                rows={4}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="image">
-                Graduation Photo{isEdit ? " (optional)" : ""}
-              </Label>
-              {currentImageUrl && (
-                <img
-                  src={currentImageUrl}
-                  alt="Current graduation photo"
-                  className="mb-2 h-32 w-24 rounded-md object-cover"
+              <div className="space-y-2 sm:max-w-40">
+                <Label htmlFor="year_graduated">Year Graduated</Label>
+                <Input
+                  id="year_graduated"
+                  type="number"
+                  inputMode="numeric"
+                  min="1900"
+                  max="2100"
+                  value={yearGraduated}
+                  onChange={(e) => setYearGraduated(e.target.value)}
+                  placeholder="2026"
                 />
-              )}
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-                required={!isEdit}
-              />
-            </div>
+              </div>
+            </FormSection>
+
+            <FormSection title="Region & honors">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="region">Region</Label>
+                  <Select
+                    value={regionValue}
+                    onValueChange={(v) => {
+                      setRegion(v as Region);
+                      setSchoolId(null);
+                      setDegreeId(null);
+                    }}
+                    disabled={Boolean(assignedRegion)}
+                  >
+                    <SelectTrigger id="region" className="w-full">
+                      <SelectValue placeholder="Select region" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REGION_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="latin_honor">Latin Honor</Label>
+                  <Select value={latinHonor} onValueChange={setLatinHonor}>
+                    <SelectTrigger id="latin_honor" className="w-full">
+                      <SelectValue placeholder="Select honor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LATIN_HONOR_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </FormSection>
+
+            <FormSection title="Profile">
+              <div className="space-y-2">
+                <Label htmlFor="message">Message / Quote</Label>
+                <Textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  required
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="image">
+                  Graduation Photo{isEdit ? " (optional)" : ""}
+                </Label>
+                {currentImageUrl && (
+                  <img
+                    src={currentImageUrl}
+                    alt="Current graduation photo"
+                    className="h-32 w-24 rounded-md object-cover"
+                  />
+                )}
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+                  required={!isEdit}
+                />
+              </div>
+            </FormSection>
+
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button type="submit" className="w-full sm:w-auto" disabled={submitting}>
-                {submitting ? "Saving…" : "Save"}
-              </Button>
+
+            <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
               <Button variant="outline" className="w-full sm:w-auto" asChild>
                 <Link to="/admin/scholars">Cancel</Link>
+              </Button>
+              <Button type="submit" className="w-full sm:w-auto" disabled={submitting}>
+                {submitting ? "Saving…" : "Save"}
               </Button>
             </div>
           </form>
