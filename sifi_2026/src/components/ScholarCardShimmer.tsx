@@ -94,9 +94,9 @@ export function ScholarCardShimmer({
     >
       <div
         className={cn(
-          "absolute -inset-full",
+          "absolute -inset-full opacity-0",
           bandClassName(variant),
-          animationClassName(variant, active)
+          active && animationClassName(variant, active)
         )}
       />
     </div>
