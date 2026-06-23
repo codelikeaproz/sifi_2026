@@ -234,6 +234,7 @@ export const TestimonialSlider = ({
           <ScholarHonorBadge
             latinHonorLabel={activeReview.latinHonorLabel}
             size="md"
+            className="md:hidden"
           />
           <MobileCelebrationOverlay active={celebrating && isMobile} />
         </div>
