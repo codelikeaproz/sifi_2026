@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-import {
-  honorTextOnDarkClassName,
-  honorTierFromLabel,
-  ScholarHonorBadge,
-} from "@/components/ScholarHonorBadge";
+import { ScholarHonorBadge } from "@/components/ScholarHonorBadge";
+import { ScholarHonorLine } from "@/components/ScholarHonorLine";
+import { getHonorTier } from "@/lib/latinHonorDisplay";
 import type { Review } from "@/components/ui/testimonial-slider-1";
 import { useCardGlow } from "@/hooks/use-card-glow";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -25,7 +23,7 @@ export function ScholarGridCard({
   const name = review.fullName ?? review.name;
   const school = review.schoolName ?? review.affiliation;
   const message = review.message ?? review.quote;
-  const honorTier = honorTierFromLabel(review.latinHonorLabel);
+  const honorTier = getHonorTier(review.latinHonor, review.latinHonorLabel);
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const canHover = useMediaQuery("(hover: hover) and (pointer: fine)");
   const { ref, glow, onMouseMove, onMouseLeave } = useCardGlow();
@@ -156,7 +154,10 @@ export function ScholarGridCard({
           loading="lazy"
         />
 
-        <ScholarHonorBadge latinHonorLabel={review.latinHonorLabel} />
+        <ScholarHonorBadge
+          latinHonor={review.latinHonor}
+          latinHonorLabel={review.latinHonorLabel}
+        />
 
         <div
           className={cn(
@@ -210,14 +211,12 @@ export function ScholarGridCard({
               </p>
             )}
             {review.latinHonorLabel && (
-              <p
-                className={cn(
-                  "mt-1 text-[10px] sm:text-xs",
-                  honorTextOnDarkClassName
-                )}
-              >
-                {review.latinHonorLabel}
-              </p>
+              <ScholarHonorLine
+                latinHonor={review.latinHonor}
+                latinHonorLabel={review.latinHonorLabel}
+                variant="dark"
+                className="mt-1"
+              />
             )}
             {message && (
               <blockquote className="mt-2 text-[10px] leading-relaxed opacity-95 line-clamp-3 sm:mt-3 sm:text-xs sm:line-clamp-4">

@@ -15,6 +15,8 @@ class LatinHonor(models.TextChoices):
     CUM_LAUDE = "cum_laude", "Cum Laude"
     MAGNA_CUM_LAUDE = "magna_cum_laude", "Magna Cum Laude"
     SUMMA_CUM_LAUDE = "summa_cum_laude", "Summa Cum Laude"
+    CUMBATI = "cumbati", "CumBati"
+    CUMPYANSA = "cumpyansa", "Cumpyansa"
 
 
 class Region(models.TextChoices):

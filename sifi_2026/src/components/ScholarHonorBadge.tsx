@@ -1,17 +1,13 @@
-import { Medal } from "lucide-react";
-
 import { cn } from "@/lib/utils";
+import type { LatinHonor } from "@/lib/api";
+import {
+  getHonorTier,
+  getPublicHonorDisplay,
+  honorTierFromLabel,
+  type HonorTier,
+} from "@/lib/latinHonorDisplay";
 
-export type HonorTier = "summa" | "magna" | "cum";
-
-export function honorTierFromLabel(label?: string): HonorTier | null {
-  if (!label) return null;
-  const normalized = label.toLowerCase();
-  if (normalized.includes("summa")) return "summa";
-  if (normalized.includes("magna")) return "magna";
-  if (normalized.includes("cum")) return "cum";
-  return null;
-}
+export { honorTierFromLabel, type HonorTier };
 
 export const HONOR_STYLES: Record<
   HonorTier,
@@ -34,12 +30,6 @@ export const HONOR_STYLES: Record<
   },
 };
 
-function honorShortLabel(tier: HonorTier): string {
-  if (tier === "summa") return "Summa";
-  if (tier === "magna") return "Magna";
-  return "Cum Laude";
-}
-
 /** Latin honor line on white / light backgrounds (solo text column). */
 export const honorTextOnLightClassName =
   "font-semibold italic leading-snug text-[#7a5f18]";
@@ -49,18 +39,23 @@ export const honorTextOnDarkClassName =
   "font-medium italic text-[#f0d78c] drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]";
 
 interface ScholarHonorBadgeProps {
+  latinHonor?: LatinHonor | "";
   latinHonorLabel?: string;
   size?: "sm" | "md";
   className?: string;
 }
 
 export function ScholarHonorBadge({
+  latinHonor,
   latinHonorLabel,
   size = "sm",
   className,
 }: ScholarHonorBadgeProps) {
-  const honorTier = honorTierFromLabel(latinHonorLabel);
-  if (!honorTier || !latinHonorLabel) return null;
+  const display = getPublicHonorDisplay(latinHonor, latinHonorLabel);
+  const honorTier = getHonorTier(latinHonor, latinHonorLabel);
+  if (!display || !honorTier) return null;
+
+  const BadgeIcon = display.BadgeIcon;
 
   return (
     <div
@@ -72,10 +67,10 @@ export function ScholarHonorBadge({
         size === "md" && "top-3 right-3 px-2.5 py-1 sm:top-4 sm:right-4 sm:px-3 sm:py-1.5",
         className
       )}
-      title={latinHonorLabel}
-      aria-label={latinHonorLabel}
+      title={display.officialLabel}
+      aria-label={display.officialLabel}
     >
-      <Medal
+      <BadgeIcon
         className={cn(
           "shrink-0",
           HONOR_STYLES[honorTier].icon,
@@ -87,11 +82,11 @@ export function ScholarHonorBadge({
       <span
         className={cn(
           "truncate font-medium text-white/95",
-          size === "sm" && "max-w-16 text-[9px] sm:max-w-22 sm:text-[10px]",
-          size === "md" && "max-w-24 text-[11px] sm:max-w-28 sm:text-xs"
+          size === "sm" && "max-w-[4.5rem] text-[9px] sm:max-w-24 sm:text-[10px]",
+          size === "md" && "max-w-28 text-[11px] sm:max-w-32 sm:text-xs"
         )}
       >
-        {honorShortLabel(honorTier)}
+        {display.badgeLabel}
       </span>
     </div>
   );

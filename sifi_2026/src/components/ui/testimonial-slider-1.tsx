@@ -5,12 +5,12 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MobileCelebrationOverlay } from "@/components/MobileCelebrationOverlay";
 import { ScholarCardShimmer } from "@/components/ScholarCardShimmer";
-import {
-  honorTextOnLightClassName,
-  ScholarHonorBadge,
-} from "@/components/ScholarHonorBadge";
+import { ScholarHonorBadge } from "@/components/ScholarHonorBadge";
+import { ScholarHonorLine } from "@/components/ScholarHonorLine";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useMobileCelebration } from "@/hooks/use-mobile-celebration";
+
+import type { LatinHonor } from "@/lib/api";
 
 export type Review = {
   id: string | number;
@@ -20,6 +20,7 @@ export type Review = {
   imageSrc: string;
   thumbnailSrc: string;
   schoolName?: string;
+  latinHonor?: LatinHonor | "";
   latinHonorLabel?: string;
   degreeName?: string;
   yearGraduated?: number | null;
@@ -207,6 +208,7 @@ export const TestimonialSlider = ({
             className="rounded-lg"
           />
           <ScholarHonorBadge
+            latinHonor={activeReview.latinHonor}
             latinHonorLabel={activeReview.latinHonorLabel}
             size="md"
             className="md:hidden"
@@ -250,9 +252,12 @@ export const TestimonialSlider = ({
                   {activeReview.fullName ?? activeReview.name}
                 </h3>
                 {activeReview.latinHonorLabel && (
-                  <p className={cn("mt-1 text-sm", honorTextOnLightClassName)}>
-                    {activeReview.latinHonorLabel}
-                  </p>
+                  <ScholarHonorLine
+                    latinHonor={activeReview.latinHonor}
+                    latinHonorLabel={activeReview.latinHonorLabel}
+                    variant="light"
+                    className="mt-1"
+                  />
                 )}
                 <blockquote className="mt-6 text-2xl md:text-3xl font-medium leading-snug">
                   &ldquo;{activeReview.message ?? activeReview.quote}&rdquo;

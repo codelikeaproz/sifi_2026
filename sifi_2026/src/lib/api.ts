@@ -9,7 +9,9 @@ export type LatinHonor =
   | ""
   | "cum_laude"
   | "magna_cum_laude"
-  | "summa_cum_laude";
+  | "summa_cum_laude"
+  | "cumbati"
+  | "cumpyansa";
 
 export type Region = "luzon" | "visayas" | "mindanao";
 export type UserRole = "admin" | "head_officer";
@@ -463,6 +465,8 @@ export const LATIN_HONOR_OPTIONS: { value: string; label: string }[] = [
   { value: "cum_laude", label: "Cum Laude" },
   { value: "magna_cum_laude", label: "Magna Cum Laude" },
   { value: "summa_cum_laude", label: "Summa Cum Laude" },
+  { value: "cumbati", label: "CumBati" },
+  { value: "cumpyansa", label: "Cumpyansa" },
 ];
 
 export function toLatinHonorValue(value: string): LatinHonor {
