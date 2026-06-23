@@ -42,7 +42,7 @@ function honorShortLabel(tier: HonorTier): string {
 
 /** Latin honor line on white / light backgrounds (solo text column). */
 export const honorTextOnLightClassName =
-  "font-medium italic text-[#9a7b2e]";
+  "font-semibold italic leading-snug text-[#7a5f18]";
 
 /** Latin honor line on dark green card gradients. */
 export const honorTextOnDarkClassName =

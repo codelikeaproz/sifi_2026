@@ -38,6 +38,7 @@ interface TestimonialSliderProps {
 }
 
 const THUMBNAIL_COUNT = 5;
+const SOLO_DESKTOP_MIN_H = "md:min-h-[500px]";
 
 export const TestimonialSlider = ({
   reviews,
@@ -163,8 +164,13 @@ export const TestimonialSlider = ({
         className
       )}
     >
-      <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-12">
-        <div className="md:col-span-3 flex flex-col justify-between order-2 md:order-1">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-stretch">
+        <div
+          className={cn(
+            "order-2 flex flex-col justify-between md:order-1 md:col-span-3",
+            SOLO_DESKTOP_MIN_H
+          )}
+        >
           <div className="flex flex-row md:flex-col justify-between md:justify-start space-x-4 md:space-x-0 md:space-y-4">
             <span className="text-sm text-muted-foreground font-mono">
               {String(index + 1).padStart(2, "0")} /{" "}
@@ -176,7 +182,7 @@ export const TestimonialSlider = ({
           </div>
 
           {thumbnailReviews.length > 0 && (
-            <div className="mt-8 flex flex-nowrap gap-2 overflow-x-auto pb-1 md:mt-0 md:max-w-full">
+            <div className="mt-8 flex flex-nowrap gap-2 overflow-x-auto pb-1 md:mt-auto md:max-w-full">
               {thumbnailReviews.map((review, i) => {
                 const originalIndex = index + 1 + i;
                 return (
@@ -198,7 +204,12 @@ export const TestimonialSlider = ({
           )}
         </div>
 
-        <div className="relative order-1 h-80 min-h-[400px] overflow-hidden rounded-lg md:order-2 md:col-span-4 md:min-h-[500px] md:self-start md:rounded-lg md:bg-muted/30">
+        <div
+          className={cn(
+            "relative order-1 h-80 min-h-[400px] overflow-hidden rounded-lg md:order-2 md:col-span-4 md:rounded-lg md:bg-muted/30",
+            SOLO_DESKTOP_MIN_H
+          )}
+        >
           <AnimatePresence initial={false} custom={direction}>
             <motion.img
               key={index}
@@ -226,7 +237,12 @@ export const TestimonialSlider = ({
           <MobileCelebrationOverlay active={celebrating && isMobile} />
         </div>
 
-        <div className="order-3 flex flex-col justify-between md:col-span-5 md:self-start md:pl-8">
+        <div
+          className={cn(
+            "order-3 flex flex-col justify-between md:col-span-5 md:pl-8",
+            SOLO_DESKTOP_MIN_H
+          )}
+        >
           <div className="relative min-h-[200px] overflow-hidden pt-4 md:pt-0">
             <AnimatePresence initial={false} custom={direction} mode="wait">
               <motion.div
@@ -263,7 +279,7 @@ export const TestimonialSlider = ({
             </AnimatePresence>
           </div>
 
-          <div className="flex items-center space-x-2 mt-8 md:mt-0">
+          <div className="flex items-center space-x-2 mt-8 md:mt-auto">
             <Button
               variant="outline"
               size="icon"
