@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { GraduationCap, PartyPopper, Sparkles, type LucideIcon } from "lucide-react";
 
@@ -47,14 +47,12 @@ export function MobileCelebrationOverlay({
   showOnDesktop = false,
 }: MobileCelebrationOverlayProps) {
   const [fallingPhrases, setFallingPhrases] = useState<FallingPhrase[]>([]);
+  const [prevActive, setPrevActive] = useState(active);
 
-  useEffect(() => {
-    if (!active) {
-      setFallingPhrases([]);
-      return;
-    }
-    setFallingPhrases(createFallingPhrases());
-  }, [active]);
+  if (active !== prevActive) {
+    setPrevActive(active);
+    setFallingPhrases(active ? createFallingPhrases() : []);
+  }
 
   if (!active || fallingPhrases.length === 0) return null;
 
