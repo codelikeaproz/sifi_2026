@@ -150,9 +150,11 @@ function ReferenceSection({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3 px-3 py-2.5 md:gap-4 md:px-4">
+                    <div className="flex items-start gap-3 px-3 py-2.5 md:gap-4 md:px-4">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{record.name}</p>
+                        <p className="break-words font-medium" title={record.name}>
+                          {record.name}
+                        </p>
                         <p className="text-xs text-muted-foreground md:hidden">
                           Used by {record.scholarCount ?? 0} scholar
                           {(record.scholarCount ?? 0) === 1 ? "" : "s"}
@@ -387,7 +389,7 @@ export default function ReferenceDataPage() {
           </p>
         </div>
 
-        <div className="grid items-start gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
           <ReferenceSection
             kind="school"
             title="Schools"
