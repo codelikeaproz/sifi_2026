@@ -254,7 +254,6 @@ export default function ScholarListPage() {
                     </div>
                     <div className="flex gap-4 text-sm text-muted-foreground">
                       <span>Honor: {s.latinHonorLabel || "—"}</span>
-                      <span>Order: {s.order ?? 0}</span>
                     </div>
                     <ScholarActions scholar={s} onDelete={handleDeleteRequest} />
                   </CardContent>
@@ -266,13 +265,12 @@ export default function ScholarListPage() {
               <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[18%]">Full Name</TableHead>
-                    <TableHead className="w-[20%]">School</TableHead>
-                    <TableHead className="w-[18%]">Degree</TableHead>
+                    <TableHead className="w-[20%]">Full Name</TableHead>
+                    <TableHead className="w-[22%]">School</TableHead>
+                    <TableHead className="w-[20%]">Degree</TableHead>
                     <TableHead className="w-[10%]">Region</TableHead>
-                    <TableHead className="w-[12%]">Latin Honor</TableHead>
-                    <TableHead className="w-[6%]">Order</TableHead>
-                    <TableHead className="w-[16%] text-right">Actions</TableHead>
+                    <TableHead className="w-[14%]">Latin Honor</TableHead>
+                    <TableHead className="w-[14%] text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -283,7 +281,6 @@ export default function ScholarListPage() {
                       <TableCell className="truncate">{s.degreeName}</TableCell>
                       <TableCell className="truncate">{s.regionLabel || "—"}</TableCell>
                       <TableCell className="truncate">{s.latinHonorLabel || "—"}</TableCell>
-                      <TableCell>{s.order ?? 0}</TableCell>
                       <TableCell>
                         <ScholarActions scholar={s} onDelete={handleDeleteRequest} inline />
                       </TableCell>
