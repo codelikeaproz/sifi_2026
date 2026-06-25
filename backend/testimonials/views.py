@@ -1,4 +1,5 @@
-from django.db.models import Count
+from django.db.models import Count, F, Min, Window
+from django.db.models.functions import Coalesce
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -35,7 +36,7 @@ class ScholarViewSet(viewsets.ModelViewSet):
     ]
 
     def get_queryset(self):
-        qs = Scholar.objects.all()
+        qs = Scholar.objects.select_related("school_ref", "degree_ref").all()
         region = self.request.query_params.get("region")
         if region:
             qs = qs.filter(region=region)
@@ -46,7 +47,23 @@ class ScholarViewSet(viewsets.ModelViewSet):
             if assigned:
                 qs = qs.filter(region=assigned)
 
+        if getattr(self, "action", None) == "list":
+            qs = self._apply_school_block_ordering(qs)
+
         return qs
+
+    def _apply_school_block_ordering(self, qs):
+        """Group scholars by school; school order follows each group's min global order."""
+        return (
+            qs.annotate(_school=Coalesce("school_ref__name", "school"))
+            .annotate(
+                _school_block_order=Window(
+                    expression=Min("order"),
+                    partition_by=[F("region"), F("_school")],
+                )
+            )
+            .order_by("_school_block_order", "order", "-created_at")
+        )
 
     def perform_create(self, serializer):
         user = self.request.user
