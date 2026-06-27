@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import AboutSifiPage from "@/pages/AboutSifiPage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import ReferenceDataPage from "@/pages/ReferenceDataPage";
@@ -16,6 +17,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutSifiPage />} />
         <Route path="/admin/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/admin/scholars" element={<ScholarListPage />} />
