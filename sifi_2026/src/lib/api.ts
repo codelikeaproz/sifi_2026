@@ -233,23 +233,6 @@ export async function getMe(): Promise<AuthUser> {
   return res.json() as Promise<AuthUser>;
 }
 
-export async function getScholars(params?: {
-  region?: RegionFilterValue;
-  search?: string;
-}): Promise<Scholar[]> {
-  const query = new URLSearchParams();
-  if (params?.region && params.region !== "all") {
-    query.set("region", params.region);
-  }
-  if (params?.search?.trim()) {
-    query.set("search", params.search.trim());
-  }
-  const qs = query.toString();
-  const res = await fetch(apiUrl(`/api/scholars/${qs ? `?${qs}` : ""}`));
-  if (!res.ok) throw new Error("Failed to load scholars");
-  return res.json() as Promise<Scholar[]>;
-}
-
 export interface PaginatedScholars {
   count: number;
   next: string | null;

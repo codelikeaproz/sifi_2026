@@ -13,9 +13,10 @@ export function useMobileCelebration() {
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
 
   useEffect(() => {
+    const timerId = celebrationTimerRef.current;
     return () => {
-      if (celebrationTimerRef.current !== undefined) {
-        window.clearTimeout(celebrationTimerRef.current);
+      if (timerId !== undefined) {
+        window.clearTimeout(timerId);
       }
     };
   }, []);
@@ -32,10 +33,11 @@ export function useMobileCelebration() {
         window.clearTimeout(celebrationTimerRef.current);
       }
 
-      celebrationTimerRef.current = window.setTimeout(
-        () => setCelebrating(false),
-        MOBILE_CELEBRATION_MS
-      );
+      const timerId = window.setTimeout(() => {
+        setCelebrating(false);
+        celebrationTimerRef.current = undefined;
+      }, MOBILE_CELEBRATION_MS);
+      celebrationTimerRef.current = timerId;
     },
     [prefersReducedMotion]
   );

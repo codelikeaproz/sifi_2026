@@ -1,4 +1,11 @@
 import confetti from "canvas-confetti";
+import { GraduationCap, PartyPopper, Sparkles, type LucideIcon } from "lucide-react";
+
+export const CELEBRATION_PHRASES: { icon: LucideIcon; text: string }[] = [
+  { icon: PartyPopper, text: "Congrats!" },
+  { icon: GraduationCap, text: "SIFI Scholars" },
+  { icon: Sparkles, text: "SIFI Graduates" },
+];
 
 export const MOBILE_CELEBRATION_MS = 5000;
 export const CELEBRATION_PHRASE_MS = 1200;

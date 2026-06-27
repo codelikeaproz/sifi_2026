@@ -77,9 +77,8 @@ export default function ScholarListPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
-  const [region, setRegion] = useState<RegionFilterValue>(
-    assignedRegion ?? "all"
-  );
+  const [region, setRegion] = useState<RegionFilterValue>("all");
+  const effectiveRegion = assignedRegion ?? region;
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(10);
   const [data, setData] = useState<PaginatedScholars | null>(null);
@@ -87,12 +86,6 @@ export default function ScholarListPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Scholar | null>(null);
   const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    if (assignedRegion) {
-      setRegion(assignedRegion);
-    }
-  }, [assignedRegion]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -103,7 +96,7 @@ export default function ScholarListPage() {
           page,
           pageSize,
           search: debouncedSearch,
-          region,
+          region: effectiveRegion,
         })
       );
     } catch {
@@ -111,7 +104,7 @@ export default function ScholarListPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, debouncedSearch, region]);
+  }, [page, pageSize, debouncedSearch, effectiveRegion]);
 
   useEffect(() => {
     load();

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -6,11 +7,20 @@ import AboutSifiPage from "@/pages/AboutSifiPage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import ReferenceDataPage from "@/pages/ReferenceDataPage";
-import AnalyticsPage from "@/pages/AnalyticsPage";
 import ScholarFormPage from "@/pages/ScholarFormPage";
 import ScholarListPage from "@/pages/ScholarListPage";
 import UserFormPage from "@/pages/UserFormPage";
 import UserListPage from "@/pages/UserListPage";
+
+const AnalyticsPage = lazy(() => import("@/pages/AnalyticsPage"));
+
+function AnalyticsRouteFallback() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center p-6 text-muted-foreground">
+      Loading analytics…
+    </div>
+  );
+}
 
 export function App() {
   return (
@@ -22,7 +32,14 @@ export function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/admin/scholars" element={<ScholarListPage />} />
           <Route path="/admin/reference-data" element={<ReferenceDataPage />} />
-          <Route path="/admin/analytics" element={<AnalyticsPage />} />
+          <Route
+            path="/admin/analytics"
+            element={
+              <Suspense fallback={<AnalyticsRouteFallback />}>
+                <AnalyticsPage />
+              </Suspense>
+            }
+          />
           <Route path="/admin/scholars/new" element={<ScholarFormPage />} />
           <Route
             path="/admin/scholars/:id/edit"

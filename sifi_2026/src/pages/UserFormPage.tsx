@@ -38,12 +38,14 @@ export default function UserFormPage() {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("");
+  const [userForm, setUserForm] = useState({
+    username: "",
+    role: "head_officer" as UserRole,
+    region: "mindanao" as Region,
+    loadedUser: null as ManagedUser | null,
+    allUsers: [] as ManagedUser[],
+  });
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>("head_officer");
-  const [region, setRegion] = useState<Region>("mindanao");
-  const [loadedUser, setLoadedUser] = useState<ManagedUser | null>(null);
-  const [allUsers, setAllUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,18 +54,21 @@ export default function UserFormPage() {
     if (!id) return;
     Promise.all([getUser(Number(id)), getUsers()])
       .then(([u, users]) => {
-        setLoadedUser(u);
-        setAllUsers(users);
-        setUsername(u.username);
-        setRole(u.role);
-        if (u.region) setRegion(u.region);
+        setUserForm({
+          username: u.username,
+          role: u.role,
+          region: u.region ?? "mindanao",
+          loadedUser: u,
+          allUsers: users,
+        });
       })
       .catch(() => setError("Failed to load user"))
       .finally(() => setLoading(false));
   }, [id]);
 
   const roleLocked =
-    loadedUser !== null && isOnlyAdminUser(loadedUser, allUsers);
+    userForm.loadedUser !== null &&
+    isOnlyAdminUser(userForm.loadedUser, userForm.allUsers);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -74,16 +79,16 @@ export default function UserFormPage() {
       return;
     }
 
-    if (role === "head_officer" && !region) {
+    if (userForm.role === "head_officer" && !userForm.region) {
       setError("Region is required for Head Officer.");
       return;
     }
 
-    if (loadedUser) {
+    if (userForm.loadedUser) {
       const roleRestriction = getUserRoleChangeRestriction(
-        loadedUser,
-        allUsers,
-        role
+        userForm.loadedUser,
+        userForm.allUsers,
+        userForm.role
       );
       if (roleRestriction) {
         setError(roleRestriction);
@@ -95,17 +100,17 @@ export default function UserFormPage() {
     try {
       if (isEdit && id) {
         await updateUser(Number(id), {
-          username,
-          role,
-          region: role === "admin" ? "" : region,
+          username: userForm.username,
+          role: userForm.role,
+          region: userForm.role === "admin" ? "" : userForm.region,
           ...(password ? { password } : {}),
         });
       } else {
         await createUser({
-          username,
+          username: userForm.username,
           password,
-          role,
-          region: role === "admin" ? "" : region,
+          role: userForm.role,
+          region: userForm.role === "admin" ? "" : userForm.region,
         });
       }
       navigate("/admin/users");
@@ -148,8 +153,10 @@ export default function UserFormPage() {
                 <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={userForm.username}
+                  onChange={(e) =>
+                    setUserForm((current) => ({ ...current, username: e.target.value }))
+                  }
                   required
                 />
               </div>
@@ -169,8 +176,10 @@ export default function UserFormPage() {
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
                 <Select
-                  value={role}
-                  onValueChange={(v) => setRole(v as UserRole)}
+                  value={userForm.role}
+                  onValueChange={(v) =>
+                    setUserForm((current) => ({ ...current, role: v as UserRole }))
+                  }
                   disabled={roleLocked}
                 >
                   <SelectTrigger id="role" className="w-full">
@@ -194,12 +203,14 @@ export default function UserFormPage() {
                   </p>
                 )}
               </div>
-              {role === "head_officer" && (
+              {userForm.role === "head_officer" && (
                 <div className="space-y-2">
                   <Label htmlFor="region">Assigned region</Label>
                   <Select
-                    value={region}
-                    onValueChange={(v) => setRegion(v as Region)}
+                    value={userForm.region}
+                    onValueChange={(v) =>
+                      setUserForm((current) => ({ ...current, region: v as Region }))
+                    }
                   >
                     <SelectTrigger id="region" className="w-full">
                       <SelectValue placeholder="Select region" />

@@ -4,7 +4,7 @@ import type { LatinHonor } from "@/lib/api";
 
 export type HonorTier = "summa" | "magna" | "cum";
 
-export function getHonorTierFromValue(
+function getHonorTierFromValue(
   latinHonor?: LatinHonor | ""
 ): HonorTier | null {
   switch (latinHonor) {
@@ -33,7 +33,7 @@ export function honorTierFromLabel(label?: string): HonorTier | null {
   return null;
 }
 
-export function honorValueFromLabel(label?: string): LatinHonor | "" {
+function honorValueFromLabel(label?: string): LatinHonor | "" {
   if (!label) return "";
   const normalized = label.toLowerCase();
   if (normalized === "cumbati") return "cumbati";

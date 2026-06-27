@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "@/lib/motion";
 
 import { ScholarHonorBadge } from "@/components/ScholarHonorBadge";
 import { ScholarHonorLine } from "@/components/ScholarHonorLine";
@@ -38,7 +38,7 @@ export function ScholarGridCard({
   }
 
   return (
-    <motion.div
+    <m.div
       className={cn("group relative", className)}
       initial={motionEnabled ? { opacity: 0, y: 24 } : false}
       whileInView={motionEnabled ? { opacity: 1, y: 0 } : undefined}
@@ -77,7 +77,7 @@ export function ScholarGridCard({
         ref={ref}
         onMouseMove={motionEnabled && canHover ? onMouseMove : undefined}
         onMouseLeave={motionEnabled && canHover ? onMouseLeave : undefined}
-        onClick={handleCardClick}
+        onClick={!canHover ? handleCardClick : undefined}
         onKeyDown={
           canHover
             ? undefined
@@ -226,6 +226,6 @@ export function ScholarGridCard({
           </div>
         </div>
       </article>
-    </motion.div>
+    </m.div>
   );
 }

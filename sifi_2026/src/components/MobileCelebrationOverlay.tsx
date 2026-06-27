@@ -1,18 +1,13 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { GraduationCap, PartyPopper, Sparkles, type LucideIcon } from "lucide-react";
+import { useRef, useState } from "react";
+import { m } from "@/lib/motion";
+import { type LucideIcon } from "lucide-react";
 
 import {
   CELEBRATION_FALL_DURATION_S,
   CELEBRATION_PHRASE_MS,
+  CELEBRATION_PHRASES,
 } from "@/lib/mobile-confetti";
 import { cn } from "@/lib/utils";
-
-export const CELEBRATION_PHRASES: { icon: LucideIcon; text: string }[] = [
-  { icon: PartyPopper, text: "Congrats!" },
-  { icon: GraduationCap, text: "SIFI Scholars" },
-  { icon: Sparkles, text: "SIFI Graduates" },
-];
 
 type FallingPhrase = {
   id: number;
@@ -47,10 +42,10 @@ export function MobileCelebrationOverlay({
   showOnDesktop = false,
 }: MobileCelebrationOverlayProps) {
   const [fallingPhrases, setFallingPhrases] = useState<FallingPhrase[]>([]);
-  const [prevActive, setPrevActive] = useState(active);
+  const prevActiveRef = useRef(active);
 
-  if (active !== prevActive) {
-    setPrevActive(active);
+  if (active !== prevActiveRef.current) {
+    prevActiveRef.current = active;
     setFallingPhrases(active ? createFallingPhrases() : []);
   }
 
@@ -67,7 +62,7 @@ export function MobileCelebrationOverlay({
       aria-hidden="true"
     >
       {fallingPhrases.map(({ id, text, icon: Icon, left, rotate, delay }) => (
-        <motion.div
+        <m.div
           key={id}
           className="absolute top-0 flex -translate-x-1/2 items-center gap-1.5 text-base font-semibold text-[#FFD700] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
           style={{ left: `${left}%` }}
@@ -85,7 +80,7 @@ export function MobileCelebrationOverlay({
         >
           <Icon className="size-4 shrink-0" strokeWidth={2.25} />
           <span>{text}</span>
-        </motion.div>
+        </m.div>
       ))}
     </div>
   );

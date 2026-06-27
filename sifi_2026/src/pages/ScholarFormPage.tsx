@@ -27,6 +27,7 @@ import {
   updateScholar,
   type ReferenceRecord,
   type Region,
+  type Scholar,
 } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -47,27 +48,70 @@ function FormSection({
   );
 }
 
+type ScholarFields = {
+  firstName: string;
+  lastName: string;
+  middleInitial: string;
+  suffix: string;
+  school: string;
+  schoolId: number | null;
+  degreeName: string;
+  degreeId: number | null;
+  region: Region;
+  latinHonor: string;
+  message: string;
+  yearGraduated: string;
+  currentImageUrl: string | null;
+};
+
+function createEmptyScholarFields(defaultRegion: Region): ScholarFields {
+  return {
+    firstName: "",
+    lastName: "",
+    middleInitial: "",
+    suffix: "",
+    school: "",
+    schoolId: null,
+    degreeName: "",
+    degreeId: null,
+    region: defaultRegion,
+    latinHonor: "none",
+    message: "",
+    yearGraduated: "",
+    currentImageUrl: null,
+  };
+}
+
+function scholarToFields(s: Scholar, defaultRegion: Region): ScholarFields {
+  return {
+    firstName: s.first_name,
+    lastName: s.last_name,
+    middleInitial: s.middle_initial ?? "",
+    suffix: s.suffix ?? "",
+    school: s.schoolName ?? s.school ?? "",
+    schoolId: s.schoolRefId ?? null,
+    degreeName: s.degreeName,
+    degreeId: s.degreeRefId ?? null,
+    region: s.region ?? defaultRegion,
+    latinHonor: fromLatinHonorValue(s.latinHonor ?? ""),
+    message: s.message,
+    yearGraduated: s.year_graduated ? String(s.year_graduated) : "",
+    currentImageUrl: s.imageSrc,
+  };
+}
+
 export default function ScholarFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { assignedRegion } = useAuth();
   const { success, error: showError } = useToast();
+  const defaultRegion = assignedRegion ?? "mindanao";
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [middleInitial, setMiddleInitial] = useState("");
-  const [suffix, setSuffix] = useState("");
-  const [school, setSchool] = useState("");
-  const [schoolId, setSchoolId] = useState<number | null>(null);
-  const [degreeName, setDegreeName] = useState("");
-  const [degreeId, setDegreeId] = useState<number | null>(null);
-  const [region, setRegion] = useState<Region>(assignedRegion ?? "mindanao");
-  const [latinHonor, setLatinHonor] = useState<string>("none");
-  const [message, setMessage] = useState("");
-  const [yearGraduated, setYearGraduated] = useState("");
+  const [fields, setFields] = useState<ScholarFields>(() =>
+    createEmptyScholarFields(defaultRegion)
+  );
   const [image, setImage] = useState<File | null>(null);
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [schoolOptions, setSchoolOptions] = useState<ReferenceRecord[]>([]);
   const [degreeOptions, setDegreeOptions] = useState<ReferenceRecord[]>([]);
   const [loadingSchools, setLoadingSchools] = useState(false);
@@ -76,31 +120,19 @@ export default function ScholarFormPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const regionValue = assignedRegion ?? region;
-  const debouncedSchoolSearch = useDebounce(school, 200);
-  const debouncedDegreeSearch = useDebounce(degreeName, 200);
+  const regionValue = assignedRegion ?? fields.region;
+  const debouncedSchoolSearch = useDebounce(fields.school, 200);
+  const debouncedDegreeSearch = useDebounce(fields.degreeName, 200);
 
   useEffect(() => {
     if (!id) return;
     getScholar(Number(id))
       .then((s) => {
-        setFirstName(s.first_name);
-        setLastName(s.last_name);
-        setMiddleInitial(s.middle_initial ?? "");
-        setSuffix(s.suffix ?? "");
-        setSchool(s.schoolName ?? s.school ?? "");
-        setSchoolId(s.schoolRefId ?? null);
-        setDegreeName(s.degreeName);
-        setDegreeId(s.degreeRefId ?? null);
-        if (s.region) setRegion(s.region);
-        setLatinHonor(fromLatinHonorValue(s.latinHonor ?? ""));
-        setMessage(s.message);
-        setYearGraduated(s.year_graduated ? String(s.year_graduated) : "");
-        setCurrentImageUrl(s.imageSrc);
+        setFields(scholarToFields(s, defaultRegion));
       })
       .catch(() => setError("Failed to load scholar"))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [defaultRegion, id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -158,19 +190,19 @@ export default function ScholarFormPage() {
     }
 
     const formData = new FormData();
-    formData.append("first_name", firstName);
-    formData.append("last_name", lastName);
-    formData.append("middle_initial", middleInitial);
-    formData.append("suffix", suffix);
-    if (schoolId) formData.append("school_id", String(schoolId));
-    formData.append("school", school);
-    if (degreeId) formData.append("degree_id", String(degreeId));
-    formData.append("degree_name", degreeName);
+    formData.append("first_name", fields.firstName);
+    formData.append("last_name", fields.lastName);
+    formData.append("middle_initial", fields.middleInitial);
+    formData.append("suffix", fields.suffix);
+    if (fields.schoolId) formData.append("school_id", String(fields.schoolId));
+    formData.append("school", fields.school);
+    if (fields.degreeId) formData.append("degree_id", String(fields.degreeId));
+    formData.append("degree_name", fields.degreeName);
     formData.append("region", regionValue);
-    formData.append("latin_honor", toLatinHonorValue(latinHonor));
-    formData.append("message", message);
-    if (yearGraduated.trim()) {
-      formData.append("year_graduated", yearGraduated.trim());
+    formData.append("latin_honor", toLatinHonorValue(fields.latinHonor));
+    formData.append("message", fields.message);
+    if (fields.yearGraduated.trim()) {
+      formData.append("year_graduated", fields.yearGraduated.trim());
     }
     if (image) formData.append("image", image);
 
@@ -181,7 +213,12 @@ export default function ScholarFormPage() {
       } else {
         await createScholar(formData);
       }
-      const displayName = [firstName, middleInitial, lastName, suffix]
+      const displayName = [
+        fields.firstName,
+        fields.middleInitial,
+        fields.lastName,
+        fields.suffix,
+      ]
         .filter(Boolean)
         .join(" ")
         .trim();
@@ -228,8 +265,10 @@ export default function ScholarFormPage() {
                   <Label htmlFor="first_name">First Name</Label>
                   <Input
                     id="first_name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    value={fields.firstName}
+                    onChange={(e) =>
+                      setFields((current) => ({ ...current, firstName: e.target.value }))
+                    }
                     required
                   />
                 </div>
@@ -237,8 +276,10 @@ export default function ScholarFormPage() {
                   <Label htmlFor="last_name">Last Name</Label>
                   <Input
                     id="last_name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    value={fields.lastName}
+                    onChange={(e) =>
+                      setFields((current) => ({ ...current, lastName: e.target.value }))
+                    }
                     required
                   />
                 </div>
@@ -248,8 +289,13 @@ export default function ScholarFormPage() {
                   <Label htmlFor="middle_initial">Middle Initial</Label>
                   <Input
                     id="middle_initial"
-                    value={middleInitial}
-                    onChange={(e) => setMiddleInitial(e.target.value)}
+                    value={fields.middleInitial}
+                    onChange={(e) =>
+                      setFields((current) => ({
+                        ...current,
+                        middleInitial: e.target.value,
+                      }))
+                    }
                     placeholder="M."
                   />
                 </div>
@@ -257,8 +303,10 @@ export default function ScholarFormPage() {
                   <Label htmlFor="suffix">Suffix</Label>
                   <Input
                     id="suffix"
-                    value={suffix}
-                    onChange={(e) => setSuffix(e.target.value)}
+                    value={fields.suffix}
+                    onChange={(e) =>
+                      setFields((current) => ({ ...current, suffix: e.target.value }))
+                    }
                     placeholder="Jr., III"
                   />
                 </div>
@@ -269,16 +317,22 @@ export default function ScholarFormPage() {
               <ReferenceAutocomplete
                 id="school"
                 label="School / University"
-                value={school}
+                value={fields.school}
                 onValueChange={(value) => {
-                  setSchool(value);
-                  setSchoolId(null);
+                  setFields((current) => ({
+                    ...current,
+                    school: value,
+                    schoolId: null,
+                  }));
                 }}
                 onSelectOption={(option) => {
-                  setSchool(option.name);
-                  setSchoolId(option.id);
+                  setFields((current) => ({
+                    ...current,
+                    school: option.name,
+                    schoolId: option.id,
+                  }));
                 }}
-                selectedId={schoolId}
+                selectedId={fields.schoolId}
                 options={schoolOptions}
                 loading={loadingSchools}
                 placeholder="University of the Philippines"
@@ -288,16 +342,22 @@ export default function ScholarFormPage() {
               <ReferenceAutocomplete
                 id="degree_name"
                 label="Degree Name"
-                value={degreeName}
+                value={fields.degreeName}
                 onValueChange={(value) => {
-                  setDegreeName(value);
-                  setDegreeId(null);
+                  setFields((current) => ({
+                    ...current,
+                    degreeName: value,
+                    degreeId: null,
+                  }));
                 }}
                 onSelectOption={(option) => {
-                  setDegreeName(option.name);
-                  setDegreeId(option.id);
+                  setFields((current) => ({
+                    ...current,
+                    degreeName: option.name,
+                    degreeId: option.id,
+                  }));
                 }}
-                selectedId={degreeId}
+                selectedId={fields.degreeId}
                 options={degreeOptions}
                 loading={loadingDegrees}
                 placeholder="Bachelor of Information Technology"
@@ -312,8 +372,13 @@ export default function ScholarFormPage() {
                   inputMode="numeric"
                   min="1900"
                   max="2100"
-                  value={yearGraduated}
-                  onChange={(e) => setYearGraduated(e.target.value)}
+                  value={fields.yearGraduated}
+                  onChange={(e) =>
+                    setFields((current) => ({
+                      ...current,
+                      yearGraduated: e.target.value,
+                    }))
+                  }
                   placeholder="2026"
                 />
               </div>
@@ -326,9 +391,12 @@ export default function ScholarFormPage() {
                   <Select
                     value={regionValue}
                     onValueChange={(v) => {
-                      setRegion(v as Region);
-                      setSchoolId(null);
-                      setDegreeId(null);
+                      setFields((current) => ({
+                        ...current,
+                        region: v as Region,
+                        schoolId: null,
+                        degreeId: null,
+                      }));
                     }}
                     disabled={Boolean(assignedRegion)}
                   >
@@ -346,7 +414,12 @@ export default function ScholarFormPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="latin_honor">Latin Honor</Label>
-                  <Select value={latinHonor} onValueChange={setLatinHonor}>
+                  <Select
+                    value={fields.latinHonor}
+                    onValueChange={(value) =>
+                      setFields((current) => ({ ...current, latinHonor: value }))
+                    }
+                  >
                     <SelectTrigger id="latin_honor" className="w-full">
                       <SelectValue placeholder="Select honor" />
                     </SelectTrigger>
@@ -367,8 +440,10 @@ export default function ScholarFormPage() {
                 <Label htmlFor="message">Message / Quote</Label>
                 <Textarea
                   id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  value={fields.message}
+                  onChange={(e) =>
+                    setFields((current) => ({ ...current, message: e.target.value }))
+                  }
                   required
                   rows={4}
                 />
@@ -377,10 +452,10 @@ export default function ScholarFormPage() {
                 <Label htmlFor="image">
                   Graduation Photo{isEdit ? " (optional)" : ""}
                 </Label>
-                {currentImageUrl && (
+                {fields.currentImageUrl && (
                   <img
-                    src={currentImageUrl}
-                    alt="Current graduation photo"
+                    src={fields.currentImageUrl}
+                    alt="Current graduation portrait of scholar"
                     className="h-32 w-24 rounded-md object-cover"
                   />
                 )}

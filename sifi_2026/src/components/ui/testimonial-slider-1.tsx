@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, m } from "@/lib/motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -51,18 +51,30 @@ export const TestimonialSlider = ({
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
 
   const totalCount = totalCountProp ?? reviews.length;
+  const currentIndexRef = useRef(0);
+
+  const maybePrefetch = useCallback(
+    (index: number) => {
+      if (
+        onNearEnd &&
+        reviews.length > 0 &&
+        reviews.length < totalCount &&
+        index + THUMBNAIL_COUNT >= reviews.length
+      ) {
+        onNearEnd();
+      }
+    },
+    [onNearEnd, reviews.length, totalCount]
+  );
 
   useEffect(() => {
-    const index = Math.min(currentIndex, Math.max(0, reviews.length - 1));
-    if (
-      onNearEnd &&
-      reviews.length > 0 &&
-      reviews.length < totalCount &&
-      index + THUMBNAIL_COUNT >= reviews.length
-    ) {
-      onNearEnd();
-    }
-  }, [currentIndex, reviews.length, totalCount, onNearEnd]);
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  useEffect(() => {
+    const index = Math.min(currentIndexRef.current, Math.max(0, reviews.length - 1));
+    maybePrefetch(index);
+  }, [reviews.length, maybePrefetch]);
 
   if (reviews.length === 0) {
     return (
@@ -81,12 +93,18 @@ export const TestimonialSlider = ({
     setDirection("right");
     triggerCelebration();
     setCurrentIndex((prev) => {
-      if (prev + 1 < reviews.length) return prev + 1;
+      if (prev + 1 < reviews.length) {
+        const next = prev + 1;
+        maybePrefetch(next);
+        return next;
+      }
       if (reviews.length < totalCount) {
         onNearEnd?.();
         return prev;
       }
-      return (prev + 1) % totalCount;
+      const next = (prev + 1) % totalCount;
+      maybePrefetch(next);
+      return next;
     });
   };
 
@@ -101,6 +119,7 @@ export const TestimonialSlider = ({
     setDirection(targetIndex > index ? "right" : "left");
     triggerCelebration();
     setCurrentIndex(targetIndex);
+    maybePrefetch(targetIndex);
   };
 
   const thumbnailReviews = reviews.slice(
@@ -163,6 +182,7 @@ export const TestimonialSlider = ({
                 const originalIndex = index + 1 + i;
                 return (
                   <button
+                    type="button"
                     key={review.id}
                     onClick={() => handleThumbnailClick(originalIndex)}
                     className="shrink-0 overflow-hidden rounded-md w-14 h-[4.5rem] sm:w-16 sm:h-20 md:w-20 md:h-24 opacity-70 hover:opacity-100 transition-opacity duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
@@ -187,7 +207,7 @@ export const TestimonialSlider = ({
           )}
         >
           <AnimatePresence initial={false} custom={direction}>
-            <motion.img
+            <m.img
               key={index}
               src={activeReview.imageSrc}
               alt={activeReview.name}
@@ -224,7 +244,7 @@ export const TestimonialSlider = ({
         >
           <div className="relative min-h-[200px] overflow-hidden pt-4 md:pt-0">
             <AnimatePresence initial={false} custom={direction} mode="wait">
-              <motion.div
+              <m.div
                 key={index}
                 custom={direction}
                 variants={textVariants}
@@ -262,7 +282,7 @@ export const TestimonialSlider = ({
                 <blockquote className="mt-6 text-2xl md:text-3xl font-medium leading-snug">
                   &ldquo;{activeReview.message ?? activeReview.quote}&rdquo;
                 </blockquote>
-              </motion.div>
+              </m.div>
             </AnimatePresence>
           </div>
 

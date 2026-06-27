@@ -59,23 +59,16 @@ export default function AnalyticsPage() {
   const { assignedRegion } = useAuth();
   const { error: showError } = useToast();
 
-  const [region, setRegion] = useState<RegionFilterValue>(
-    assignedRegion ?? "all"
-  );
+  const [region, setRegion] = useState<RegionFilterValue>("all");
+  const effectiveRegion = assignedRegion ?? region;
   const [analytics, setAnalytics] = useState<ScholarAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (assignedRegion) {
-      setRegion(assignedRegion);
-    }
-  }, [assignedRegion]);
 
   const loadAnalytics = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getScholarAnalytics(
-        region !== "all" ? { region } : undefined
+        effectiveRegion !== "all" ? { region: effectiveRegion } : undefined
       );
       setAnalytics(data);
     } catch (err) {
@@ -87,7 +80,7 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, [region, showError]);
+  }, [effectiveRegion, showError]);
 
   useEffect(() => {
     void loadAnalytics();
@@ -113,7 +106,7 @@ export default function AnalyticsPage() {
 
   const showRegionPie =
     !assignedRegion &&
-    region === "all" &&
+    effectiveRegion === "all" &&
     regionsWithData.length > 1;
 
   const missingClassYear = analytics

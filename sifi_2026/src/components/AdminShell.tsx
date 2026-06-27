@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LogOut, Menu, Users, GraduationCap, BookOpen, ExternalLink, BarChart3 } from "lucide-react";
 
@@ -95,6 +95,59 @@ function SidebarContent({
   );
 }
 
+function AdminMobileNav({
+  items,
+  pathname,
+}: {
+  items: NavItem[];
+  pathname: string;
+}) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <>
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            aria-label="Close navigation"
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="relative h-full w-72 max-w-[85vw] border-r bg-background p-4 shadow-xl">
+            <SidebarContent
+              items={items}
+              pathname={pathname}
+              onNavigate={() => setMobileOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur md:hidden">
+        <div className="flex items-center justify-between px-4 py-3">
+          <button
+            type="button"
+            className="rounded-md border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Open navigation"
+            onClick={() => setMobileOpen(true)}
+          >
+            <Menu className="size-5" />
+          </button>
+          <Link to="/" className="flex items-center gap-2">
+            <img
+              src={sifiLogo}
+              alt="Sugar Industry Foundation Inc."
+              className="h-9 w-auto"
+            />
+          </Link>
+          <ThemeToggle />
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function AdminShell({
   title,
   description,
@@ -104,11 +157,6 @@ export function AdminShell({
 }: AdminShellProps) {
   const { canManageUsers, logout } = useAuth();
   const { pathname } = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
 
   const items = useMemo<NavItem[]>(
     () => [
@@ -157,45 +205,8 @@ export function AdminShell({
         <SidebarContent items={items} pathname={pathname} />
       </aside>
 
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <button
-            type="button"
-            aria-label="Close navigation"
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div className="relative h-full w-72 max-w-[85vw] border-r bg-background p-4 shadow-xl">
-            <SidebarContent
-              items={items}
-              pathname={pathname}
-              onNavigate={() => setMobileOpen(false)}
-            />
-          </div>
-        </div>
-      )}
-
       <div className="flex min-h-svh min-w-0 flex-1 flex-col">
-        <div className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur md:hidden">
-          <div className="flex items-center justify-between px-4 py-3">
-            <button
-              type="button"
-              className="rounded-md border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Open navigation"
-              onClick={() => setMobileOpen(true)}
-            >
-              <Menu className="size-5" />
-            </button>
-            <Link to="/" className="flex items-center gap-2">
-              <img
-                src={sifiLogo}
-                alt="Sugar Industry Foundation Inc."
-                className="h-9 w-auto"
-              />
-            </Link>
-            <ThemeToggle />
-          </div>
-        </div>
+        <AdminMobileNav key={pathname} items={items} pathname={pathname} />
 
         <main className="flex-1 p-4 md:p-6">
           {(title || description || actions) && (

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,67 +22,76 @@ export function DeleteConfirmDialog({
   onConfirm,
   confirming = false,
 }: DeleteConfirmDialogProps) {
-  useEffect(() => {
-    if (!open) return;
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !confirming) {
-        onOpenChange(false);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (open && !dialog.open) {
+      dialog.showModal();
+    } else if (!open && dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    function handleCancel(event: Event) {
+      if (confirming) {
+        event.preventDefault();
+        return;
       }
+      onOpenChange(false);
     }
 
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, confirming, onOpenChange]);
-
-  if (!open) return null;
+    dialog.addEventListener("cancel", handleCancel);
+    return () => dialog.removeEventListener("cancel", handleCancel);
+  }, [confirming, onOpenChange]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <button
-        type="button"
-        aria-label="Close dialog"
-        className="absolute inset-0 bg-black/50"
-        disabled={confirming}
-        onClick={() => {
-          if (!confirming) onOpenChange(false);
-        }}
-      />
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
-        className={cn(
-          "relative z-10 grid w-full max-w-md gap-4 rounded-lg border bg-background p-6 shadow-lg"
-        )}
-      >
-        <div className="space-y-2">
-          <h2 id="delete-dialog-title" className="text-lg font-semibold text-foreground">
-            {title}
-          </h2>
-          <p id="delete-dialog-description" className="text-sm text-muted-foreground">
-            {description}
-          </p>
-        </div>
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button
-            variant="outline"
-            disabled={confirming}
-            onClick={() => onOpenChange(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            className="text-white"
-            disabled={confirming}
-            onClick={() => void onConfirm()}
-          >
-            {confirming ? "Deleting…" : confirmLabel}
-          </Button>
-        </div>
+    <dialog
+      ref={dialogRef}
+      aria-labelledby="delete-dialog-title"
+      aria-describedby="delete-dialog-description"
+      className={cn(
+        "fixed top-1/2 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
+        "grid gap-4 rounded-lg border bg-background p-6 shadow-lg backdrop:bg-black/50",
+        "open:animate-in open:fade-in-0 open:zoom-in-95"
+      )}
+      onClose={() => {
+        if (!confirming) onOpenChange(false);
+      }}
+    >
+      <div className="space-y-2">
+        <h2 id="delete-dialog-title" className="text-lg font-semibold text-foreground">
+          {title}
+        </h2>
+        <p id="delete-dialog-description" className="text-sm text-muted-foreground">
+          {description}
+        </p>
       </div>
-    </div>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={confirming}
+          onClick={() => onOpenChange(false)}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          variant="destructive"
+          className="text-white"
+          disabled={confirming}
+          onClick={() => void onConfirm()}
+        >
+          {confirming ? "Deleting…" : confirmLabel}
+        </Button>
+      </div>
+    </dialog>
   );
 }

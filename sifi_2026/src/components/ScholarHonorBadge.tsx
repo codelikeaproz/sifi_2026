@@ -3,11 +3,8 @@ import type { LatinHonor } from "@/lib/api";
 import {
   getHonorTier,
   getPublicHonorDisplay,
-  honorTierFromLabel,
   type HonorTier,
 } from "@/lib/latinHonorDisplay";
-
-export { honorTierFromLabel, type HonorTier };
 
 export const HONOR_STYLES: Record<
   HonorTier,
