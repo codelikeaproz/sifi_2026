@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,20 +24,21 @@ export function DeleteConfirmDialog({
 }: DeleteConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
+  const closeDialog = useCallback(() => {
+    if (confirming) return;
+    dialogRef.current?.close();
+    onOpenChange(false);
+  }, [confirming, onOpenChange]);
+
   useEffect(() => {
+    if (!open) return;
+
     const dialog = dialogRef.current;
     if (!dialog) return;
 
-    if (open && !dialog.open) {
+    if (!dialog.open) {
       dialog.showModal();
-    } else if (!open && dialog.open) {
-      dialog.close();
     }
-  }, [open]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
 
     function handleCancel(event: Event) {
       if (confirming) {
@@ -48,8 +49,15 @@ export function DeleteConfirmDialog({
     }
 
     dialog.addEventListener("cancel", handleCancel);
-    return () => dialog.removeEventListener("cancel", handleCancel);
-  }, [confirming, onOpenChange]);
+    return () => {
+      dialog.removeEventListener("cancel", handleCancel);
+      if (dialog.open) {
+        dialog.close();
+      }
+    };
+  }, [open, confirming, onOpenChange]);
+
+  if (!open) return null;
 
   return (
     <dialog
@@ -58,7 +66,8 @@ export function DeleteConfirmDialog({
       aria-describedby="delete-dialog-description"
       className={cn(
         "fixed top-1/2 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
-        "grid gap-4 rounded-lg border bg-background p-6 shadow-lg backdrop:bg-black/50",
+        "grid gap-4 rounded-lg border border-border bg-background p-6 text-foreground shadow-lg",
+        "[&::backdrop]:bg-black/50",
         "open:animate-in open:fade-in-0 open:zoom-in-95"
       )}
       onClose={() => {
@@ -76,9 +85,9 @@ export function DeleteConfirmDialog({
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={confirming}
-          onClick={() => onOpenChange(false)}
+          onClick={closeDialog}
         >
           Cancel
         </Button>
